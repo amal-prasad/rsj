@@ -4,23 +4,27 @@
 // quirks, but it does NOT replace a real-device check of the decoder-priming fix
 // (iOS Safari has device-specific autoplay/seek/decoder behavior Playwright's
 // WebKit build does not fully reproduce).
+//
+// Model: the video scrubs CONTINUOUSLY across the whole pin — it never freezes.
+// window.__scrub.marks are overlay-timing anchors (video keeps advancing under
+// each overlay), not freeze points. So this spec asserts monotonic ct progress
+// instead of a fixed currentTime at each mark.
 
 import { test, expect, type Page } from '@playwright/test';
 
-type Pause = { idx: number; t: number; scrollY: number; progress: number };
-type Transit = { scrollY: number; progress: number };
+type Mark = { idx: number; t: number; scrollY: number; progress: number };
 type Scrub = {
   ready: boolean;
+  continuous: boolean;
   duration: number;
-  pauses: Pause[];
-  transits: Transit[];
+  marks: Mark[];
   stStart: number;
   stEnd: number;
   endVH: number;
 };
 
-const TOLERANCE = 1 / 30 + 0.06; // one frame @30fps + settle slop
 const SETTLE_MS = 400;
+const CT_EPS = 0.02; // seconds; floor for "did it actually move"
 
 async function gotoReady(page: Page): Promise<Scrub> {
   await page.goto('/index.html');
@@ -40,6 +44,10 @@ async function scrollAndSettle(page: Page, y: number) {
     () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
   );
   await page.waitForTimeout(SETTLE_MS);
+}
+
+async function currentTimeOf(page: Page): Promise<number> {
+  return page.locator('#scrub').evaluate((el: HTMLVideoElement) => el.currentTime);
 }
 
 async function opacityOf(page: Page, selector: string): Promise<number> {
@@ -65,44 +73,48 @@ for (const [width, height] of viewports) {
   test.describe(`viewport ${width}x${height}`, () => {
     test.use({ viewport: { width, height } });
 
-    test(`pause accuracy + overlays @${width}x${height}`, async ({ page }) => {
+    test(`continuous scrub + overlay timing @${width}x${height}`, async ({ page }) => {
       const scrub = await gotoReady(page);
+      expect(scrub.continuous).toBe(true);
 
-      // 2. Pause-trigger accuracy
-      for (const pause of scrub.pauses) {
-        await scrollAndSettle(page, pause.scrollY);
-        const currentTime = await page.locator('#scrub').evaluate((el: HTMLVideoElement) => el.currentTime);
-        expect(Math.abs(currentTime - pause.t)).toBeLessThanOrEqual(TOLERANCE);
-        await expect(page).toHaveScreenshot(`pause-${pause.idx}-w${width}.png`, { maxDiffPixelRatio: 0.02 });
+      // 1. ct is a monotonically non-decreasing function of scroll — proves the
+      // spine is one continuous scrub, not a freeze at each mark.
+      let lastCt = -1;
+      for (const mark of scrub.marks) {
+        await scrollAndSettle(page, mark.scrollY);
+        const ct = await currentTimeOf(page);
+        expect(ct).toBeGreaterThan(lastCt);
+        lastCt = ct;
+
+        // video keeps advancing past the mark under the overlay (no freeze)
+        await scrollAndSettle(page, Math.min(mark.scrollY + 140, scrub.stEnd));
+        const ctPast = await currentTimeOf(page);
+        expect(ctPast - ct).toBeGreaterThan(CT_EPS);
+        lastCt = ctPast;
       }
 
-      // 3. Scrub-bound determinism: back to top, then re-visit same positions
+      // 2. Determinism: back to top, then re-visit each mark — ct must match
+      // (same scroll position -> same currentTime, proves scroll-bound not event-bound).
       await scrollAndSettle(page, 0);
-      for (const pause of scrub.pauses) {
-        await scrollAndSettle(page, pause.scrollY);
-        const currentTime = await page.locator('#scrub').evaluate((el: HTMLVideoElement) => el.currentTime);
-        expect(Math.abs(currentTime - pause.t)).toBeLessThanOrEqual(TOLERANCE);
-        await expect(page).toHaveScreenshot(`pause-${pause.idx}-w${width}.png`, { maxDiffPixelRatio: 0.02 });
+      for (const mark of scrub.marks) {
+        await scrollAndSettle(page, mark.scrollY);
+        const ct = await currentTimeOf(page);
+        expect(Math.abs(ct - mark.t)).toBeLessThanOrEqual(0.15);
+        await expect(page).toHaveScreenshot(`mark-${mark.idx}-w${width}.png`, { maxDiffPixelRatio: 0.02 });
       }
 
-      // 4. Overlay timing at pause midpoints
-      for (const pause of scrub.pauses) {
-        await scrollAndSettle(page, pause.scrollY);
-        const opacity = await opacityOf(page, `#ov${pause.idx + 1}`);
-        expect(opacity).toBeGreaterThanOrEqual(0.9);
-      }
-
-      // Overlay timing at transit midpoints: all overlays hidden
-      for (const transit of scrub.transits) {
-        await scrollAndSettle(page, transit.scrollY);
-        for (const ovId of ['#ov1', '#ov2', '#ov3', '#ov4']) {
-          const opacity = await opacityOf(page, ovId);
-          expect(opacity).toBeLessThanOrEqual(0.1);
+      // 3. Overlay opacity gates correctly at each mark: own overlay up, others down.
+      for (const mark of scrub.marks) {
+        await scrollAndSettle(page, mark.scrollY);
+        for (let i = 0; i < scrub.marks.length; i++) {
+          const opacity = await opacityOf(page, `#ov${i + 1}`);
+          if (i === mark.idx) expect(opacity).toBeGreaterThanOrEqual(0.9);
+          else expect(opacity).toBeLessThanOrEqual(0.1);
         }
       }
     });
 
-    // 5. Responsive sweep: no horizontal overflow, CTAs hit-testable
+    // 4. Responsive sweep: no horizontal overflow, CTAs hit-testable
     test(`responsive layout @${width}x${height}`, async ({ page }) => {
       await gotoReady(page);
 
