@@ -391,10 +391,9 @@
   }
 
   // Mobile URL-bar show/hide changes innerHeight mid-scroll → pin refresh → bottom breaks & scrub
-  // desyncs. ignoreMobileResize skips those tiny toolbar resizes; normalizeScroll hands touch scroll
-  // to GSAP so the pin stays locked. Touch-only (isTouch===1) so desktop scroll feel is unchanged.
+  // desyncs. ignoreMobileResize skips those tiny toolbar resizes. (pinType:"transform" in build()
+  // pins without position:fixed so the mobile toolbar can't jump the stage. No scroll hijacking.)
   ScrollTrigger.config({ ignoreMobileResize:true });
-  if(ScrollTrigger.isTouch === 1){ ScrollTrigger.normalizeScroll(true); }
 
   // enter transforms per overlay (vary the reveal, not one identical entrance)
   var ENTER = [
@@ -443,6 +442,7 @@
         start:"top top",
         end:function(){ return "+=" + Math.round(window.innerHeight * END_VH); },
         pin:".stage",
+        pinType:"transform",   // pin without position:fixed → mobile URL-bar can't jump the stage
         scrub:true,
         anticipatePin:1,
         invalidateOnRefresh:true,
