@@ -89,22 +89,16 @@
     will-change:opacity,transform;
     pointer-events:none;
     opacity:0;visibility:hidden; /* GSAP reveals via autoAlpha once ready; prevents raw-text flash before JS runs */
-  }
-  .ov a,.ov button{pointer-events:auto}
-  .ov__inner{
-    width:100%;max-width:min(46rem,92vw);
-    padding:clamp(1.5rem,2.2vw + 1rem,2.6rem);
-    border-radius:20px;
-    /* HUD glass: frost the moving footage behind the text when an overlay is up */
-    background:rgba(12,12,14,.34);
-    backdrop-filter:blur(16px) saturate(1.15);
-    -webkit-backdrop-filter:blur(16px) saturate(1.15);
-    border:1px solid rgba(255,255,255,.10);
-    box-shadow:0 24px 70px rgba(0,0,0,.4);
+    /* HUD glass: frost the WHOLE moving footage while an overlay is up; text stays crisp on top */
+    background:rgba(10,10,12,.28);
+    backdrop-filter:blur(18px) saturate(1.12);
+    -webkit-backdrop-filter:blur(18px) saturate(1.12);
   }
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-    .ov__inner{background:rgba(10,10,12,.72)} /* fallback: solid-ish panel if no blur support */
+    .ov{background:rgba(8,8,10,.62)} /* fallback: darken bg if no blur support */
   }
+  .ov a,.ov button{pointer-events:auto}
+  .ov__inner{width:100%;max-width:min(46rem,92vw)}
   .ov--bottom{justify-content:flex-end;align-items:center;text-align:center}
   .ov--bottom .ov__inner{margin-inline:auto}
   .ov--left{justify-content:flex-end;align-items:flex-start;text-align:left}
