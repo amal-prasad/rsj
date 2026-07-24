@@ -1,0 +1,80 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - link "RS ज्वेलर्स — मुखपृष्ठ" [ref=f1e3] [cursor=pointer]:
+      - /url: "#top"
+      - img "RS ज्वेलर्स का लोगो — सोने का शील्ड और मुकुट मोनोग्राम" [ref=f1e4]
+      - generic [ref=f1e5]: RS ज्वेलर्स
+    - link "व्हाट्सएप" [ref=f1e6] [cursor=pointer]:
+      - /url: https://wa.me/917869541656
+  - region "परिचय" [ref=f1e7]:
+    - generic [ref=f1e8]:
+      - generic [ref=f1e11]:
+        - heading "शुद्ध सोना, शुद्ध चाँदी, शुद्ध भरोसा" [level=1] [ref=f1e12]
+        - paragraph [ref=f1e13]: बड़ा सराफा, इन्दौर से — तीन पीढ़ियों का हॉलमार्क ज्वेलरी शिल्प
+        - link "व्हाट्सएप पर संपर्क करें" [ref=f1e14] [cursor=pointer]:
+          - /url: https://wa.me/917869541656
+      - generic [ref=f1e17]: स्क्रॉल करें ↓
+  - main [ref=f1e18]:
+    - region [ref=f1e19]:
+      - generic [ref=f1e20]:
+        - paragraph [ref=f1e21]: बड़ा सराफा · इन्दौर
+        - heading "सोने और चाँदी के आभूषणों के निर्माता एवं होलसेल विक्रेता" [level=2] [ref=f1e22]
+        - paragraph [ref=f1e23]: सोना और चाँदी | थोक एवं फुटकर विक्रेता | हॉलमार्क ज्वेलरी निर्माता। पीढ़ियों के भरोसे और शिल्प-कौशल के साथ, हर आभूषण में शुद्धता की गारंटी।
+        - generic [ref=f1e24]:
+          - generic [ref=f1e25]:
+            - heading "हॉलमार्क शुद्धता" [level=3] [ref=f1e26]
+            - paragraph [ref=f1e27]: प्रमाणित सोना और चाँदी — हर टुकड़े पर भरोसा।
+          - generic [ref=f1e28]:
+            - heading "थोक एवं फुटकर" [level=3] [ref=f1e29]
+            - paragraph [ref=f1e30]: निर्माता से सीधे — व्यापारी और ग्राहक दोनों के लिए।
+          - generic [ref=f1e31]:
+            - heading "अपना निर्माण" [level=3] [ref=f1e32]
+            - paragraph [ref=f1e33]: बड़ा सराफा में स्वयं का ज्वेलरी निर्माण एवं डिज़ाइन।
+    - separator [ref=f1e34]
+    - region [ref=f1e35]:
+      - generic [ref=f1e36]:
+        - paragraph [ref=f1e37]: हमारी टीम
+        - heading "भागीदार" [level=2] [ref=f1e38]
+        - generic [ref=f1e39]:
+          - article [ref=f1e40]:
+            - heading "अनामीशरण सोलंकी" [level=3] [ref=f1e41]
+            - paragraph [ref=f1e42]: भागीदार
+            - link "📞 7869541656" [ref=f1e43] [cursor=pointer]:
+              - /url: tel:+917869541656
+            - link "व्हाट्सएप" [ref=f1e44] [cursor=pointer]:
+              - /url: https://wa.me/917869541656
+          - article [ref=f1e47]:
+            - heading "ऋषभ सिंह सोलंकी" [level=3] [ref=f1e48]
+            - paragraph [ref=f1e49]: भागीदार
+            - link "📞 9575970787" [ref=f1e50] [cursor=pointer]:
+              - /url: tel:+919575970787
+            - link "व्हाट्सएप" [ref=f1e51] [cursor=pointer]:
+              - /url: https://wa.me/919575970787
+    - separator [ref=f1e54]
+    - region [ref=f1e55]:
+      - generic [ref=f1e56]:
+        - paragraph [ref=f1e57]: संपर्क
+        - heading "हमसे मिलें" [level=2] [ref=f1e58]
+        - generic [ref=f1e59]:
+          - generic [ref=f1e60]:
+            - generic [ref=f1e61]: RS ज्वेलर्स 102-E पंचरत्न बिल्डिंग, बड़ा सराफा, इन्दौर
+            - link "व्हाट्सएप पर संपर्क करें" [ref=f1e63] [cursor=pointer]:
+              - /url: https://wa.me/917869541656
+          - generic [ref=f1e64]:
+            - paragraph [ref=f1e65]: सोना और चाँदी | थोक एवं फुटकर विक्रेता | हॉलमार्क ज्वेलरी निर्माता।
+            - link "📷 @rsjewellersindore" [ref=f1e66] [cursor=pointer]:
+              - /url: https://instagram.com/rsjewellersindore
+  - contentinfo [ref=f1e67]:
+    - generic [ref=f1e68]:
+      - generic [ref=f1e69]:
+        - img "RS ज्वेलर्स लोगो" [ref=f1e70]
+        - generic [ref=f1e71]:
+          - strong [ref=f1e72]: RS ज्वेलर्स
+          - text: बड़ा सराफा, इन्दौर
+      - navigation [ref=f1e73]:
+        - link "7869541656" [ref=f1e74] [cursor=pointer]:
+          - /url: https://wa.me/917869541656
+        - link "9575970787" [ref=f1e75] [cursor=pointer]:
+          - /url: https://wa.me/919575970787
+        - link "@rsjewellersindore" [ref=f1e76] [cursor=pointer]:
+          - /url: https://instagram.com/rsjewellersindore
