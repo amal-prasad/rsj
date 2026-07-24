@@ -88,6 +88,7 @@
     padding:calc(var(--safe-t) + 5rem) max(var(--pad),var(--safe-r)) calc(var(--safe-b) + clamp(2.5rem,8vh,5rem)) max(var(--pad),var(--safe-l));
     will-change:opacity,transform;
     pointer-events:none;
+    opacity:0;visibility:hidden; /* GSAP reveals via autoAlpha once ready; prevents raw-text flash before JS runs */
   }
   .ov a,.ov button{pointer-events:auto}
   .ov__inner{width:100%;max-width:min(46rem,92vw)}
@@ -179,6 +180,19 @@
   }
   @media (min-width:2000px){:root{--maxw:1400px}}
 
+  /* ---------- Loader ---------- */
+  .loader{
+    position:fixed;inset:0;z-index:999;background:var(--bg);
+    display:flex;align-items:center;justify-content:center;
+    transition:opacity .5s ease;
+  }
+  .loader__mark{
+    width:clamp(64px,14vw,96px);height:auto;border-radius:10px;
+    animation:loaderPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes loaderPulse{0%,100%{opacity:.35}50%{opacity:1}}
+  .loader--done{opacity:0;pointer-events:none}
+
   /* ---------- Reduced motion: static stack, no pin/scrub ---------- */
   @media (prefers-reduced-motion:reduce){
     .spine{height:auto}
@@ -196,6 +210,8 @@
 </style>
 </head>
 <body>
+
+<div id="loader" class="loader"><img class="loader__mark" src="rsj.jpg" alt="RS ज्वेलर्स"></div>
 
 <header class="site">
   <a class="brand" href="#top" aria-label="RS ज्वेलर्स — मुखपृष्ठ">
@@ -333,6 +349,20 @@
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var video  = document.getElementById("scrub");
   var railFill = document.getElementById("railFill");
+  var loader = document.getElementById("loader");
+
+  var loaderShownAt = performance.now();
+  var LOADER_MIN_MS = 1800; // floor so it reads as a loading screen, not a flicker
+  function hideLoader(){
+    if(!loader) return;
+    var wait = Math.max(0, LOADER_MIN_MS - (performance.now() - loaderShownAt));
+    setTimeout(function(){
+      if(!loader) return;
+      loader.classList.add("loader--done");
+      loader.addEventListener("transitionend", function(){ if(loader) loader.remove(); }, {once:true});
+    }, wait);
+  }
+  setTimeout(hideLoader, 10000); // safety net if an expected event never fires
 
   // 4 overlay anchor timestamps (seconds), matched to scene beats. Video NEVER freezes —
   // it scrubs continuously; overlays fade in/hold/out over the moving footage around these marks.
@@ -343,6 +373,7 @@
   if(reduce){
     video.setAttribute("loop","");
     video.play().catch(function(){});
+    hideLoader();
     return;
   }
 
@@ -356,20 +387,11 @@
 
   // Continuous scrub: whole video maps linearly to the pinned scroll distance; it never freezes.
   // Overlays fade in/hold/out over the MOVING footage within a window around each MARK.
-  var END_VH = 6.5;   // total pinned scroll distance = 650vh (longer = slower, more time to read)
+  var END_VH = 3.5;   // ponytail: shortened for now (too little content for 650vh) — bump back to 6.5 when more content lands
   var WIN = 2.2;      // overlay half-window in video-seconds (fade-in + hold + fade-out span ~2*WIN)
   var FADE = 0.7;     // fade-in / fade-out duration in video-seconds
 
-  function throttledWriter(){
-    var last = 0;
-    return function(t, force){
-      var now = performance.now();
-      if(!force && now - last < 33) return; // ~30 writes/sec
-      last = now;
-      try{ video.currentTime = t; }catch(e){}
-    };
-  }
-  var writeCT = throttledWriter();
+  function writeCT(t){ try{ video.currentTime = t; }catch(e){} }
 
   var st = null;                 // ScrollTrigger instance
   var DUR = 0;                   // video duration (timeline length, 1 unit = 1 second)
@@ -383,7 +405,7 @@
         start:"top top",
         end:function(){ return "+=" + Math.round(window.innerHeight * END_VH); },
         pin:".stage",
-        scrub:true,
+        scrub:0.35,
         anticipatePin:1,
         invalidateOnRefresh:true,
         onUpdate:function(self){ if(railFill) railFill.style.transform = "scaleX(" + self.progress + ")"; }
@@ -447,6 +469,7 @@
         // measure only after metadata + fonts settled
         ScrollTrigger.refresh();
         exposeMap();
+        hideLoader();
       });
     });
   }
