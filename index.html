@@ -69,15 +69,63 @@
       .sw-copy:nth-of-type(4n+2) { justify-content: flex-start; padding-top: 14vh; }
       .sw-copy:nth-of-type(4n+3) { justify-content: flex-end; padding-bottom: 12vh; }
     }
+
+    /* Branded loader veil — hides only once the engine can paint scene 1, the
+       page has fully loaded, and the display fonts are ready (see gate logic
+       in the inline script below). */
+    #loader{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;
+      background:var(--sw-bg);transition:opacity .6s ease;}
+    #loader img{width:clamp(96px,18vw,160px);border-radius:14px;
+      animation:loader-pulse 1.8s ease-in-out infinite;}
+    #loader.is-done{opacity:0;pointer-events:none;}
+    @keyframes loader-pulse{0%,100%{opacity:.55;transform:scale(.97)}
+      50%{opacity:1;transform:scale(1)}}
+    @media (prefers-reduced-motion:reduce){#loader img{animation:none;}}
   </style>
 </head>
 <body>
+  <div id="loader" aria-hidden="true"><img src="assets/logo.jpg" alt="" /></div>
   <div id="top"></div>
   <div id="world"></div>
 
   <script src="scrub-engine.js"></script>
   <script>
+    // Same 860px line the engine uses (isMobile()) — never two breakpoints.
+    const isPhone = window.matchMedia('(hover: none) and (pointer: coarse)').matches
+                 || window.matchMedia('(max-width: 860px)').matches;
+    const LOADER_MIN = isPhone ? 4200 : 3000;    // brand beat floor
+    const LOADER_MAX = isPhone ? 12000 : 9000;   // safety net — never trap the user
+    const t0 = performance.now();
+
+    // (a) engine built: layout() ran AND scene 1 can paint
+    let markReady;
+    const engineReady = new Promise(r => { markReady = r; });
+    // (b) window load: all images, the mobile-swapped clip's metadata, stylesheets
+    const pageLoad = new Promise(r => {
+      if (document.readyState === 'complete') r();
+      else window.addEventListener('load', r, { once: true });
+    });
+    // (c) fonts (Tiro Devanagari + Hind) — avoids a reflow behind the veil
+    const fontsReady = (document.fonts && document.fonts.ready) || Promise.resolve();
+
+    let hidden = false;
+    function hideLoader() {
+      if (hidden) return;
+      hidden = true;
+      const l = document.getElementById('loader');
+      if (!l) return;
+      l.classList.add('is-done');
+      setTimeout(() => l.remove(), 700);          // after the .6s opacity transition
+    }
+
+    Promise.all([engineReady, pageLoad, fontsReady])
+      .then(() => new Promise(r =>
+        setTimeout(r, Math.max(0, LOADER_MIN - (performance.now() - t0)))))
+      .then(hideLoader);
+    setTimeout(hideLoader, LOADER_MAX);
+
     mountScrollWorld(document.getElementById('world'), {
+      onReady: () => markReady(),
       atmosphere: true,                                  // gold ambient glow (particles hidden via CSS)
       brand: { name: 'RS ज्वेलर्स', href: '#top' },
       cta: { label: 'Instagram', href: 'https://instagram.com/rsjewellersindore' },

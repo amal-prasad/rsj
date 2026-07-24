@@ -12,6 +12,7 @@
        diveScroll: 1.3,   // viewport-heights of scroll per dive clip
        connScroll: 0.9,   // ...per connector clip
        hint: 'scroll to fly in',
+       onReady: () => {}, // called exactly once, after layout() runs and scene 1 can paint
        nav: true,         // show the top section nav
        atmosphere: true,  // subtle gradient + drifting particles behind the clips
        sections: [
@@ -139,6 +140,7 @@ function mountScrollWorld(container, config) {
   SEGMENTS.forEach(s => {
     const scene = el('div', 'sw-scene'); scene.style.setProperty('--sw-accent', s.accent || '');
     const img = el('img', 'sw-scene__still'); img.alt = ''; img.decoding = 'async'; img.loading = 'lazy';
+    img.addEventListener('load', maybeReady);
     const poster = (isMobile() && s.stillM) ? s.stillM : s.still;
     if (poster) img.src = poster;
     scene.appendChild(img); stage.appendChild(scene);
@@ -179,14 +181,29 @@ function mountScrollWorld(container, config) {
   let vh = window.innerHeight, stageX = 0, totalW = 0, activeIndex = -1, ticking = false;
   let laidOutW = window.innerWidth;   // width the current layout was computed at (see onResize)
 
+  // Two scrub states — the equivalent of a gsap.matchMedia() desktop/mobile split.
+  // dist  scales total scroll distance: phones cover the film in less page height
+  // eps   min currentTime delta before a seek is issued (bigger = fewer decodes)
+  // lerp  how fast `cur` chases `target` (slower = fewer distinct seek targets/frame)
+  // Desktop numbers are the engine's current values — desktop behaviour is unchanged.
+  const MOBILE  = { dist: 0.60, eps: 0.020, lerp: 0.10 };
+  const DESKTOP = { dist: 1.00, eps: 0.008, lerp: 0.18 };
+  const state = () => (isMobile() ? MOBILE : DESKTOP);
+
   function layout() {
+    const prevLen = totalW * vh;
+    const frac = prevLen ? (window.scrollY || 0) / prevLen : 0;
     vh = window.innerHeight;
     laidOutW = window.innerWidth;
     stageX = window.innerWidth > 860 ? 4 : 0;
+    const k = state().dist;
     let off = 0;
-    SEGMENTS.forEach(s => { s.start = off * vh; off += s.w; s.end = off * vh; });
+    SEGMENTS.forEach(s => { s.start = off * vh; off += s.w * k; s.end = off * vh; });
     totalW = off;
     track.style.height = (totalW * vh + vh) + 'px';   // +1vh so the last flight completes
+    // Track length changes when the breakpoint is crossed (rotation), so hold the
+    // reader's place proportionally instead of dumping them into a different scene.
+    if (frac && Math.abs(totalW * vh - prevLen) > 1) window.scrollTo(0, frac * totalW * vh);
     read();
   }
 
@@ -209,7 +226,7 @@ function mountScrollWorld(container, config) {
         v.muted = true; v.playsInline = true; v.preload = 'auto';
         v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
         v.src = URL.createObjectURL(blob);
-        v.addEventListener('loadedmetadata', () => { s.ready = true; read(); });
+        v.addEventListener('loadedmetadata', () => { s.ready = true; read(); maybeReady(); });
         // Reveal the video (hide the still poster) only once a real frame has
         // painted — on iOS a seeked-but-never-played muted video stays blank, so
         // hiding the still on metadata alone would flash an empty scene.
@@ -271,7 +288,7 @@ function mountScrollWorld(container, config) {
   }
 
   function raf() {
-    const eps = isMobile() ? 0.02 : 0.008;   // coarser seek step on phones = fewer decodes
+    const st = state();
     for (let i = 0; i < NSEG; i++) {
       const s = SEGMENTS[i];
       if (!s.hasClip || !s.ready || !s.video) continue;
@@ -280,10 +297,10 @@ function mountScrollWorld(container, config) {
       // cur keeps lerping, so we snap to the latest target the moment it's free.
       if (s.video.seeking) continue;
       if (!s.visible && Math.abs(s.cur - s.target) < 0.002) continue;
-      s.cur += (s.target - s.cur) * (reduce ? 1 : 0.18);
+      s.cur += (s.target - s.cur) * (reduce ? 1 : st.lerp);
       const dur = s.video.duration || 1;
       const t = clamp(s.cur, 0, 0.999) * dur;
-      if (Math.abs(s.video.currentTime - t) > eps) { try { s.video.currentTime = t; } catch (e) {} }
+      if (Math.abs(s.video.currentTime - t) > st.eps) { try { s.video.currentTime = t; } catch (e) {} }
     }
     requestAnimationFrame(raf);
   }
@@ -293,6 +310,18 @@ function mountScrollWorld(container, config) {
   // instant instead of showing a blank frame. `userReady` also makes freshly-loaded
   // clips prime themselves (see loadClip).
   let userReady = false;
+  // Fires once the page is genuinely built: layout() has computed the track and the
+  // first scene can actually paint. This is the loader's gate.
+  let laidOut = false, readyFired = false;
+  function maybeReady() {
+    if (readyFired || !laidOut) return;
+    const s0 = SEGMENTS[0];
+    // Under reduced motion no clip is ever loaded — the still IS the scene.
+    const painted = (reduce || !s0.clip) ? s0.img.complete : s0.ready;
+    if (!painted) return;
+    readyFired = true;
+    if (typeof config.onReady === 'function') config.onReady();
+  }
   function primeVideo(v) {
     if (!isMobile() || !v) return;
     try { const p = v.play(); if (p && p.then) p.then(() => { try { v.pause(); } catch (e) {} }).catch(() => {}); }
@@ -321,7 +350,7 @@ function mountScrollWorld(container, config) {
   window.addEventListener('resize', onResize);
   window.addEventListener('orientationchange', layout);
   window.addEventListener('load', layout);
-  layout();
+  layout(); laidOut = true; maybeReady();
   requestAnimationFrame(raf);
 
   // ---- helpers ----
