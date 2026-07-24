@@ -91,7 +91,20 @@
     opacity:0;visibility:hidden; /* GSAP reveals via autoAlpha once ready; prevents raw-text flash before JS runs */
   }
   .ov a,.ov button{pointer-events:auto}
-  .ov__inner{width:100%;max-width:min(46rem,92vw)}
+  .ov__inner{
+    width:100%;max-width:min(46rem,92vw);
+    padding:clamp(1.5rem,2.2vw + 1rem,2.6rem);
+    border-radius:20px;
+    /* HUD glass: frost the moving footage behind the text when an overlay is up */
+    background:rgba(12,12,14,.34);
+    backdrop-filter:blur(16px) saturate(1.15);
+    -webkit-backdrop-filter:blur(16px) saturate(1.15);
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow:0 24px 70px rgba(0,0,0,.4);
+  }
+  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .ov__inner{background:rgba(10,10,12,.72)} /* fallback: solid-ish panel if no blur support */
+  }
   .ov--bottom{justify-content:flex-end;align-items:center;text-align:center}
   .ov--bottom .ov__inner{margin-inline:auto}
   .ov--left{justify-content:flex-end;align-items:flex-start;text-align:left}
@@ -387,7 +400,7 @@
 
   // Continuous scrub: whole video maps linearly to the pinned scroll distance; it never freezes.
   // Overlays fade in/hold/out over the MOVING footage within a window around each MARK.
-  var END_VH = 3.5;   // ponytail: shortened for now (too little content for 650vh) — bump back to 6.5 when more content lands
+  var END_VH = 6.5;   // full scrub distance (og pacing)
   var WIN = 2.2;      // overlay half-window in video-seconds (fade-in + hold + fade-out span ~2*WIN)
   var FADE = 0.7;     // fade-in / fade-out duration in video-seconds
 
