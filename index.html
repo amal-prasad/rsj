@@ -865,6 +865,10 @@
 
       // 4 overlay anchor timestamps (seconds), matched to scene beats. Video NEVER freezes —
       // it scrubs continuously; overlays fade in/hold/out over the moving footage around these marks.
+      // Mobile URL-bar show/hide only changes height — don't let that refresh ScrollTrigger
+      // (was re-measuring the pin end mid-scroll → bottom break + scrub desync). Width/orientation still refresh.
+      ScrollTrigger.config({ ignoreMobileResize: true });
+
       var MARKS = [1.0, 6.0, 10.5, 19.0];
       var overlays = ["ov1", "ov2", "ov3", "ov4"].map(function (id) { return document.getElementById(id); });
 
