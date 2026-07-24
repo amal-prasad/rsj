@@ -1,1022 +1,517 @@
 <!doctype html>
 <html lang="hi">
-
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0A0A0A">
-  <title>RS ज्वेलर्स — शुद्ध सोना, शुद्ध चाँदी, शुद्ध भरोसा | बड़ा सराफा, इन्दौर</title>
-  <meta name="description"
-    content="RS ज्वेलर्स, बड़ा सराफा इन्दौर — सोने और चाँदी के आभूषणों के निर्माता एवं होलसेल विक्रेता। हॉलमार्क ज्वेलरी।">
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Hind:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
-
-  <style>
-    :root {
-      --bg: #0A0A0A;
-      --gold: #C9A227;
-      --gold-soft: #E6C96A;
-      --text: #F2EDE2;
-      --muted: #B9B2A3;
-      --line: rgba(201, 162, 39, .30);
-      --maxw: 1180px;
-      --pad: clamp(1.1rem, 4.5vw, 4rem);
-      --safe-l: env(safe-area-inset-left, 0px);
-      --safe-r: env(safe-area-inset-right, 0px);
-      --safe-b: env(safe-area-inset-bottom, 0px);
-      --safe-t: env(safe-area-inset-top, 0px);
-      /* z-scale */
-      --z-video: 1;
-      --z-scrim: 2;
-      --z-ov: 3;
-      --z-progress: 4;
-      --z-header: 50;
-    }
-
-    * {
-      box-sizing: border-box
-    }
-
-    html {
-      -webkit-text-size-adjust: 100%
-    }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: "Hind", "Noto Sans Devanagari", system-ui, sans-serif;
-      font-size: clamp(16px, .95rem + .25vw, 18px);
-      line-height: 1.7;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-      font-weight: 400;
-    }
-
-    img {
-      max-width: 100%;
-      display: block;
-      height: auto
-    }
-
-    a {
-      color: inherit
-    }
-
-    h1,
-    h2,
-    h3 {
-      font-family: "Tiro Devanagari Hindi", Georgia, serif;
-      font-weight: 400;
-      line-height: 1.14;
-      margin: 0;
-      letter-spacing: -.01em
-    }
-
-    ::selection {
-      background: var(--gold);
-      color: #0A0A0A
-    }
-
-    :focus-visible {
-      outline: 3px solid var(--gold-soft);
-      outline-offset: 3px;
-      border-radius: 8px
-    }
-
-    /* ---------- Header ---------- */
-    header.site {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: var(--z-header);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: max(.55rem, var(--safe-t)) max(var(--pad), var(--safe-r)) .55rem max(var(--pad), var(--safe-l));
-      background: linear-gradient(to bottom, rgba(10, 10, 10, .9), rgba(10, 10, 10, 0));
-      -webkit-backdrop-filter: blur(2px);
-      backdrop-filter: blur(2px);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: .6rem;
-      text-decoration: none
-    }
-
-    .brand img {
-      width: clamp(40px, 8vw, 52px);
-      height: auto;
-      border-radius: 6px
-    }
-
-    .brand b {
-      font-family: "Tiro Devanagari Hindi", serif;
-      font-size: clamp(1.05rem, 1rem + .7vw, 1.45rem);
-      color: var(--text);
-      letter-spacing: .01em
-    }
-
-    .nav-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: .4rem;
-      min-height: 44px;
-      padding: .55rem 1.1rem;
-      border: 1px solid var(--gold);
-      border-radius: 999px;
-      color: var(--gold-soft);
-      text-decoration: none;
-      font-weight: 600;
-      font-size: clamp(.85rem, .8rem + .3vw, 1rem);
-      white-space: nowrap;
-      transition: background .25s cubic-bezier(.2, .8, .2, 1), color .25s;
-    }
-
-    .nav-cta:hover {
-      background: var(--gold);
-      color: #0A0A0A
-    }
-
-    .nav-cta svg {
-      width: 1.15em;
-      height: 1.15em;
-      fill: currentColor
-    }
-
-    /* ---------- Spine / pinned stage ---------- */
-    .spine {
-      position: relative
-    }
-
-    .stage {
-      position: relative;
-      height: 100vh;
-      height: 100svh;
-      overflow: hidden;
-      background: #0A0A0A
-    }
-
-    .stage__video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: var(--z-video);
-      object-fit: cover;
-      object-position: center 32%;
-      background: #0A0A0A;
-    }
-
-    .stage__scrim {
-      position: absolute;
-      inset: 0;
-      z-index: var(--z-scrim);
-      pointer-events: none;
-      background:
-        radial-gradient(130% 80% at 50% 42%, rgba(10, 10, 10, 0) 38%, rgba(10, 10, 10, .55) 100%),
-        linear-gradient(to bottom, rgba(10, 10, 10, .72), rgba(10, 10, 10, .18) 34%, rgba(10, 10, 10, .32) 62%, rgba(10, 10, 10, .82));
-    }
-
-    .stage__grain {
-      position: absolute;
-      inset: 0;
-      z-index: var(--z-scrim);
-      pointer-events: none;
-      opacity: .05;
-      mix-blend-mode: overlay;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
-
-    /* ---------- Overlays ---------- */
-    .ov {
-      position: absolute;
-      inset: 0;
-      z-index: var(--z-ov);
-      display: flex;
-      flex-direction: column;
-      padding: calc(var(--safe-t) + 5rem) max(var(--pad), var(--safe-r)) calc(var(--safe-b) + clamp(2.5rem, 8vh, 5rem)) max(var(--pad), var(--safe-l));
-      will-change: opacity, transform;
-      pointer-events: none;
-      opacity: 0;
-      visibility: hidden;
-      /* GSAP reveals via autoAlpha once ready; prevents raw-text flash before JS runs */
-      /* HUD glass: whole viewport frosts when an overlay is up — bg stays visible, text stays discernible */
-      background: rgba(10, 10, 12, .03);
-      backdrop-filter: blur(2px) saturate(1.06);
-      -webkit-backdrop-filter: blur(2px) saturate(1.06);
-    }
-
-    @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
-      .ov {
-        background: rgba(10, 10, 12, .5)
-      }
-
-      /* fallback: dim scrim if no blur support */
-    }
-
-    .ov a,
-    .ov button {
-      pointer-events: auto
-    }
-
-    .ov__inner {
-      width: 100%;
-      max-width: min(46rem, 92vw)
-    }
-
-    .ov--bottom {
-      justify-content: flex-end;
-      align-items: center;
-      text-align: center
-    }
-
-    .ov--bottom .ov__inner {
-      margin-inline: auto
-    }
-
-    .ov--left {
-      justify-content: flex-end;
-      align-items: flex-start;
-      text-align: left
-    }
-
-    .ov--center {
-      justify-content: center;
-      align-items: center;
-      text-align: center
-    }
-
-    .kicker {
-      display: inline-block;
-      color: var(--gold);
-      font-weight: 600;
-      font-size: clamp(.8rem, .75rem + .25vw, .95rem);
-      letter-spacing: .02em;
-      margin-bottom: 1rem;
-    }
-
-    .kicker::after {
-      content: "";
-      display: block;
-      width: 2.4rem;
-      height: 2px;
-      margin-top: .7rem;
-      background: linear-gradient(90deg, var(--gold), transparent)
-    }
-
-    .ov--bottom .kicker::after,
-    .ov--center .kicker::after {
-      margin-inline: auto;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
-      width: 3.4rem
-    }
-
-    .ov h1 {
-      font-size: clamp(2.2rem, 4.5vw + 1rem, 5.2rem);
-      text-wrap: balance;
-      color: var(--text);
-      text-shadow: 0 2px 30px rgba(0, 0, 0, .7)
-    }
-
-    .ov h2 {
-      font-size: clamp(1.9rem, 3.6vw + 1rem, 4rem);
-      text-wrap: balance;
-      color: var(--text);
-      text-shadow: 0 2px 26px rgba(0, 0, 0, .7)
-    }
-
-    .ov p {
-      margin: 1.1rem 0 0;
-      font-size: clamp(1.02rem, 1vw + .55rem, 1.35rem);
-      color: var(--text);
-      line-height: 1.6;
-      max-width: 52ch;
-      text-shadow: 0 1px 14px rgba(0, 0, 0, .75)
-    }
-
-    .ov--bottom p,
-    .ov--center p {
-      margin-inline: auto
-    }
-
-    .ov .sub {
-      color: var(--gold-soft)
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: .55rem;
-      min-height: 52px;
-      min-width: 44px;
-      margin-top: clamp(1.4rem, 3.5vh, 2rem);
-      padding: .85rem 1.7rem;
-      border-radius: 999px;
-      background: linear-gradient(180deg, var(--gold-soft), var(--gold));
-      color: #0A0A0A;
-      font-weight: 700;
-      text-decoration: none;
-      font-size: clamp(1rem, .9rem + .5vw, 1.15rem);
-      box-shadow: 0 12px 34px rgba(201, 162, 39, .28);
-      transition: transform .22s cubic-bezier(.2, .8, .2, 1), box-shadow .22s;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 42px rgba(201, 162, 39, .42)
-    }
-
-    .btn svg {
-      width: 1.15em;
-      height: 1.15em;
-      fill: currentColor
-    }
-
-    /* partner rows in OV4 */
-    .partners {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .9rem 2rem;
-      justify-content: center;
-      margin-top: 1.4rem
-    }
-
-    .partner {
-      display: flex;
-      flex-direction: column;
-      gap: .15rem
-    }
-
-    .partner b {
-      font-family: "Hind";
-      font-weight: 600;
-      font-size: 1.05rem;
-      color: var(--text)
-    }
-
-    .partner a {
-      display: inline-flex;
-      align-items: center;
-      gap: .4rem;
-      min-height: 44px;
-      color: var(--gold-soft);
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1.15rem;
-      letter-spacing: .02em
-    }
-
-    .partner a:hover {
-      color: var(--text)
-    }
-
-    .ov4-addr {
-      margin-top: 1.1rem;
-      color: var(--muted);
-      font-size: 1rem
-    }
-
-    /* scrub progress rail */
-    .rail {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 2px;
-      z-index: var(--z-progress);
-      background: rgba(201, 162, 39, .14)
-    }
-
-    .rail__fill {
-      height: 100%;
-      width: 0;
-      background: linear-gradient(90deg, var(--gold), var(--gold-soft));
-      transform-origin: left
-    }
-
-    .scroll-hint {
-      position: absolute;
-      left: 50%;
-      bottom: calc(var(--safe-b) + 1rem);
-      transform: translateX(-50%);
-      z-index: var(--z-ov);
-      color: var(--muted);
-      font-size: .78rem;
-      letter-spacing: .15em;
-      pointer-events: none;
-      animation: bob 2.2s ease-in-out infinite;
-    }
-
-    @keyframes bob {
-
-      0%,
-      100% {
-        transform: translate(-50%, 0)
-      }
-
-      50% {
-        transform: translate(-50%, 7px)
-      }
-    }
-
-    /* ---------- Footer ---------- */
-    footer {
-      position: relative;
-      z-index: 5;
-      background: var(--bg);
-      border-top: 1px solid var(--line);
-      padding: clamp(3rem, 8vh, 5rem) max(var(--pad), var(--safe-r)) calc(clamp(2.5rem, 6vh, 4rem) + var(--safe-b)) max(var(--pad), var(--safe-l));
-    }
-
-    .foot {
-      max-width: var(--maxw);
-      margin-inline: auto;
-      display: grid;
-      grid-template-columns: 1.3fr 1fr;
-      gap: clamp(2rem, 5vw, 4rem);
-      align-items: start
-    }
-
-    .foot h3 {
-      font-size: clamp(1.5rem, 2vw + 1rem, 2.2rem);
-      color: var(--text);
-      margin-bottom: .4rem
-    }
-
-    .foot .biz {
-      color: var(--muted);
-      margin: .6rem 0 1.4rem;
-      max-width: 44ch
-    }
-
-    .foot address {
-      font-style: normal;
-      color: var(--text);
-      font-size: clamp(1.05rem, 1.2vw + .7rem, 1.3rem);
-      line-height: 1.85
-    }
-
-    .foot .cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .8rem;
-      margin-top: 1.5rem
-    }
-
-    .foot-contacts {
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem
-    }
-
-    .fc {
-      display: flex;
-      flex-direction: column;
-      gap: .1rem
-    }
-
-    .fc small {
-      color: var(--muted);
-      font-size: .85rem;
-      letter-spacing: .04em
-    }
-
-    .fc a {
-      display: inline-flex;
-      align-items: center;
-      gap: .45rem;
-      min-height: 44px;
-      color: var(--gold-soft);
-      text-decoration: none;
-      font-size: 1.2rem;
-      font-weight: 600;
-      letter-spacing: .02em
-    }
-
-    .fc a:hover {
-      color: var(--text)
-    }
-
-    .foot-brand {
-      display: flex;
-      align-items: center;
-      gap: .7rem;
-      margin-top: 2.5rem;
-      padding-top: 1.6rem;
-      border-top: 1px solid var(--line)
-    }
-
-    .foot-brand img {
-      width: 46px;
-      border-radius: 6px
-    }
-
-    .foot-legal {
-      max-width: var(--maxw);
-      margin: 1.6rem auto 0;
-      color: var(--muted);
-      font-size: .85rem
-    }
-
-    .wa svg {
-      width: 1.1em;
-      height: 1.1em;
-      fill: currentColor
-    }
-
-    @media (max-width:720px) {
-      .foot {
-        grid-template-columns: 1fr;
-        gap: 2rem
-      }
-
-      .brand b {
-        display: none
-      }
-
-      .ov--left {
-        align-items: center;
-        text-align: center
-      }
-
-      .ov--left .kicker::after {
-        margin-inline: auto;
-        background: linear-gradient(90deg, transparent, var(--gold), transparent);
-        width: 3.4rem
-      }
-
-      .ov p {
-        margin-inline: auto
-      }
-    }
-
-    @media (max-height:480px) and (orientation:landscape) {
-      .ov {
-        justify-content: center;
-        padding-top: calc(var(--safe-t) + 3.5rem);
-        padding-bottom: 1.2rem
-      }
-
-      .ov--bottom,
-      .ov--left {
-        justify-content: center
-      }
-
-      .ov h1 {
-        font-size: clamp(1.6rem, 7vh, 2.4rem)
-      }
-
-      .ov h2 {
-        font-size: clamp(1.5rem, 6vh, 2.2rem)
-      }
-
-      .ov p {
-        font-size: clamp(.9rem, 3.2vh, 1.05rem);
-        margin-top: .5rem
-      }
-
-      .btn {
-        margin-top: 1rem;
-        min-height: 44px
-      }
-
-      .scroll-hint {
-        display: none
-      }
-
-      .partners {
-        gap: .5rem 1.5rem;
-        margin-top: .8rem
-      }
-    }
-
-    @media (min-width:2000px) {
-      :root {
-        --maxw: 1400px
-      }
-    }
-
-    /* ---------- Loader ---------- */
-    .loader {
-      position: fixed;
-      inset: 0;
-      z-index: 999;
-      background: var(--bg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity .5s ease;
-    }
-
-    .loader__mark {
-      width: clamp(64px, 14vw, 96px);
-      height: auto;
-      border-radius: 10px;
-      animation: loaderPulse 1.4s ease-in-out infinite;
-    }
-
-    @keyframes loaderPulse {
-
-      0%,
-      100% {
-        opacity: .35
-      }
-
-      50% {
-        opacity: 1
-      }
-    }
-
-    .loader--done {
-      opacity: 0;
-      pointer-events: none
-    }
-
-    /* ---------- Reduced motion: static stack, no pin/scrub ---------- */
-    @media (prefers-reduced-motion:reduce) {
-      .spine {
-        height: auto
-      }
-
-      .stage {
-        position: relative;
-        height: auto;
-        overflow: visible
-      }
-
-      .stage__video {
-        position: relative;
-        width: 100%;
-        height: auto;
-        aspect-ratio: 16/9;
-        object-fit: cover
-      }
-
-      .stage__scrim,
-      .stage__grain,
-      .scroll-hint,
-      .rail {
-        display: none
-      }
-
-      .ov {
-        position: relative;
-        inset: auto;
-        opacity: 1 !important;
-        visibility: visible !important;
-        transform: none !important;
-        filter: none !important;
-        min-height: auto;
-        padding: clamp(3rem, 9vh, 6rem) var(--pad);
-        border-top: 1px solid var(--line);
-        background: none;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-        /* no glass in static stack */
-      }
-
-      .ov--left,
-      .ov--center,
-      .ov--bottom {
-        justify-content: flex-start;
-        align-items: center;
-        text-align: center
-      }
-
-      .ov p,
-      .ov .ov__inner {
-        margin-inline: auto
-      }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0A">
+<title>RS ज्वेलर्स — शुद्ध सोना, शुद्ध चाँदी, शुद्ध भरोसा | बड़ा सराफा, इन्दौर</title>
+<meta name="description" content="RS ज्वेलर्स, बड़ा सराफा इन्दौर — सोने और चाँदी के आभूषणों के निर्माता एवं होलसेल विक्रेता। हॉलमार्क ज्वेलरी।">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Hind:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#0A0A0A;
+    --gold:#C9A227;
+    --gold-soft:#E6C96A;
+    --text:#F2EDE2;
+    --muted:#B9B2A3;
+    --line:rgba(201,162,39,.30);
+    --maxw:1180px;
+    --pad:clamp(1.1rem,4.5vw,4rem);
+    --safe-l:env(safe-area-inset-left,0px);
+    --safe-r:env(safe-area-inset-right,0px);
+    --safe-b:env(safe-area-inset-bottom,0px);
+    --safe-t:env(safe-area-inset-top,0px);
+    /* z-scale */
+    --z-video:1; --z-scrim:2; --z-ov:3; --z-progress:4; --z-header:50;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:"Hind","Noto Sans Devanagari",system-ui,sans-serif;
+    font-size:clamp(16px,.95rem + .25vw,18px);line-height:1.7;
+    overflow-x:hidden;-webkit-font-smoothing:antialiased;
+    font-weight:400;
+  }
+  img{max-width:100%;display:block;height:auto}
+  a{color:inherit}
+  h1,h2,h3{font-family:"Tiro Devanagari Hindi",Georgia,serif;font-weight:400;line-height:1.14;margin:0;letter-spacing:-.01em}
+  ::selection{background:var(--gold);color:#0A0A0A}
+  :focus-visible{outline:3px solid var(--gold-soft);outline-offset:3px;border-radius:8px}
+
+  /* ---------- Header ---------- */
+  header.site{
+    position:fixed;top:0;left:0;right:0;z-index:var(--z-header);
+    display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    padding:max(.55rem,var(--safe-t)) max(var(--pad),var(--safe-r)) .55rem max(var(--pad),var(--safe-l));
+    background:linear-gradient(to bottom,rgba(10,10,10,.9),rgba(10,10,10,0));
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  }
+  .brand{display:flex;align-items:center;gap:.6rem;text-decoration:none}
+  .brand img{width:clamp(40px,8vw,52px);height:auto;border-radius:6px}
+  .brand b{font-family:"Tiro Devanagari Hindi",serif;font-size:clamp(1.05rem,1rem + .7vw,1.45rem);color:var(--text);letter-spacing:.01em}
+  .nav-cta{
+    display:inline-flex;align-items:center;gap:.4rem;min-height:44px;padding:.55rem 1.1rem;
+    border:1px solid var(--gold);border-radius:999px;color:var(--gold-soft);text-decoration:none;
+    font-weight:600;font-size:clamp(.85rem,.8rem + .3vw,1rem);white-space:nowrap;
+    transition:background .25s cubic-bezier(.2,.8,.2,1),color .25s;
+  }
+  .nav-cta:hover{background:var(--gold);color:#0A0A0A}
+  .nav-cta svg{width:1.15em;height:1.15em;fill:currentColor}
+
+  /* ---------- Spine / pinned stage ---------- */
+  .spine{position:relative}
+  .stage{position:relative;height:100vh;height:100svh;overflow:hidden;background:#0A0A0A}
+  .stage__video{
+    position:absolute;inset:0;width:100%;height:100%;z-index:var(--z-video);
+    object-fit:cover;object-position:center 32%;background:#0A0A0A;
+  }
+  .stage__scrim{
+    position:absolute;inset:0;z-index:var(--z-scrim);pointer-events:none;
+    background:
+      radial-gradient(130% 80% at 50% 42%,rgba(10,10,10,0) 38%,rgba(10,10,10,.55) 100%),
+      linear-gradient(to bottom,rgba(10,10,10,.72),rgba(10,10,10,.18) 34%,rgba(10,10,10,.32) 62%,rgba(10,10,10,.82));
+  }
+  .stage__grain{
+    position:absolute;inset:0;z-index:var(--z-scrim);pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- Overlays ---------- */
+  .ov{
+    position:absolute;inset:0;z-index:var(--z-ov);
+    display:flex;flex-direction:column;
+    padding:calc(var(--safe-t) + 5rem) max(var(--pad),var(--safe-r)) calc(var(--safe-b) + clamp(2.5rem,8vh,5rem)) max(var(--pad),var(--safe-l));
+    will-change:opacity,transform;
+    pointer-events:none;
+    opacity:0;visibility:hidden; /* GSAP reveals via autoAlpha once ready; prevents raw-text flash before JS runs */
+  }
+  .ov a,.ov button{pointer-events:auto}
+  .ov__inner{
+    width:100%;max-width:min(46rem,92vw);
+    padding:clamp(1.5rem,2.2vw + 1rem,2.6rem);
+    border-radius:20px;
+    /* HUD glass: frost the moving footage behind the text when an overlay is up */
+    background:rgba(12,12,14,.34);
+    backdrop-filter:blur(16px) saturate(1.15);
+    -webkit-backdrop-filter:blur(16px) saturate(1.15);
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow:0 24px 70px rgba(0,0,0,.4);
+  }
+  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .ov__inner{background:rgba(10,10,12,.72)} /* fallback: solid-ish panel if no blur support */
+  }
+  .ov--bottom{justify-content:flex-end;align-items:center;text-align:center}
+  .ov--bottom .ov__inner{margin-inline:auto}
+  .ov--left{justify-content:flex-end;align-items:flex-start;text-align:left}
+  .ov--center{justify-content:center;align-items:center;text-align:center}
+
+  .kicker{
+    display:inline-block;color:var(--gold);font-weight:600;
+    font-size:clamp(.8rem,.75rem + .25vw,.95rem);letter-spacing:.02em;margin-bottom:1rem;
+  }
+  .kicker::after{content:"";display:block;width:2.4rem;height:2px;margin-top:.7rem;
+    background:linear-gradient(90deg,var(--gold),transparent)}
+  .ov--bottom .kicker::after,.ov--center .kicker::after{margin-inline:auto;background:linear-gradient(90deg,transparent,var(--gold),transparent);width:3.4rem}
+
+  .ov h1{font-size:clamp(2.2rem,4.5vw + 1rem,5.2rem);text-wrap:balance;color:var(--text);text-shadow:0 2px 30px rgba(0,0,0,.7)}
+  .ov h2{font-size:clamp(1.9rem,3.6vw + 1rem,4rem);text-wrap:balance;color:var(--text);text-shadow:0 2px 26px rgba(0,0,0,.7)}
+  .ov p{margin:1.1rem 0 0;font-size:clamp(1.02rem,1vw + .55rem,1.35rem);color:var(--text);line-height:1.6;max-width:52ch;text-shadow:0 1px 14px rgba(0,0,0,.75)}
+  .ov--bottom p,.ov--center p{margin-inline:auto}
+  .ov .sub{color:var(--gold-soft)}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:.55rem;
+    min-height:52px;min-width:44px;margin-top:clamp(1.4rem,3.5vh,2rem);padding:.85rem 1.7rem;
+    border-radius:999px;background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#0A0A0A;
+    font-weight:700;text-decoration:none;font-size:clamp(1rem,.9rem + .5vw,1.15rem);
+    box-shadow:0 12px 34px rgba(201,162,39,.28);
+    transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 16px 42px rgba(201,162,39,.42)}
+  .btn svg{width:1.15em;height:1.15em;fill:currentColor}
+
+  /* partner rows in OV4 */
+  .partners{display:flex;flex-wrap:wrap;gap:.9rem 2rem;justify-content:center;margin-top:1.4rem}
+  .partner{display:flex;flex-direction:column;gap:.15rem}
+  .partner b{font-family:"Hind";font-weight:600;font-size:1.05rem;color:var(--text)}
+  .partner a{display:inline-flex;align-items:center;gap:.4rem;min-height:44px;color:var(--gold-soft);text-decoration:none;font-weight:600;font-size:1.15rem;letter-spacing:.02em}
+  .partner a:hover{color:var(--text)}
+  .ov4-addr{margin-top:1.1rem;color:var(--muted);font-size:1rem}
+
+  /* scrub progress rail */
+  .rail{position:fixed;left:0;right:0;bottom:0;height:2px;z-index:var(--z-progress);background:rgba(201,162,39,.14)}
+  .rail__fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold-soft));transform-origin:left}
+  .scroll-hint{
+    position:absolute;left:50%;bottom:calc(var(--safe-b) + 1rem);transform:translateX(-50%);z-index:var(--z-ov);
+    color:var(--muted);font-size:.78rem;letter-spacing:.15em;pointer-events:none;
+    animation:bob 2.2s ease-in-out infinite;
+  }
+  @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,7px)}}
+
+  /* ---------- Footer ---------- */
+  footer{
+    position:relative;z-index:5;background:var(--bg);border-top:1px solid var(--line);
+    padding:clamp(3rem,8vh,5rem) max(var(--pad),var(--safe-r)) calc(clamp(2.5rem,6vh,4rem) + var(--safe-b)) max(var(--pad),var(--safe-l));
+  }
+  .foot{max-width:var(--maxw);margin-inline:auto;display:grid;grid-template-columns:1.3fr 1fr;gap:clamp(2rem,5vw,4rem);align-items:start}
+  .foot h3{font-size:clamp(1.5rem,2vw + 1rem,2.2rem);color:var(--text);margin-bottom:.4rem}
+  .foot .biz{color:var(--muted);margin:.6rem 0 1.4rem;max-width:44ch}
+  .foot address{font-style:normal;color:var(--text);font-size:clamp(1.05rem,1.2vw + .7rem,1.3rem);line-height:1.85}
+  .foot .cta-row{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.5rem}
+  .foot-contacts{display:flex;flex-direction:column;gap:1.2rem}
+  .fc{display:flex;flex-direction:column;gap:.1rem}
+  .fc small{color:var(--muted);font-size:.85rem;letter-spacing:.04em}
+  .fc a{display:inline-flex;align-items:center;gap:.45rem;min-height:44px;color:var(--gold-soft);text-decoration:none;font-size:1.2rem;font-weight:600;letter-spacing:.02em}
+  .fc a:hover{color:var(--text)}
+  .foot-brand{display:flex;align-items:center;gap:.7rem;margin-top:2.5rem;padding-top:1.6rem;border-top:1px solid var(--line)}
+  .foot-brand img{width:46px;border-radius:6px}
+  .foot-legal{max-width:var(--maxw);margin:1.6rem auto 0;color:var(--muted);font-size:.85rem}
+
+  .wa svg{width:1.1em;height:1.1em;fill:currentColor}
+
+  @media (max-width:720px){
+    .foot{grid-template-columns:1fr;gap:2rem}
+    .brand b{display:none}
+    .ov--left{align-items:center;text-align:center}
+    .ov--left .kicker::after{margin-inline:auto;background:linear-gradient(90deg,transparent,var(--gold),transparent);width:3.4rem}
+    .ov p{margin-inline:auto}
+  }
+  @media (max-height:480px) and (orientation:landscape){
+    .ov{justify-content:center;padding-top:calc(var(--safe-t) + 3.5rem);padding-bottom:1.2rem}
+    .ov--bottom,.ov--left{justify-content:center}
+    .ov h1{font-size:clamp(1.6rem,7vh,2.4rem)}
+    .ov h2{font-size:clamp(1.5rem,6vh,2.2rem)}
+    .ov p{font-size:clamp(.9rem,3.2vh,1.05rem);margin-top:.5rem}
+    .btn{margin-top:1rem;min-height:44px}
+    .scroll-hint{display:none}
+    .partners{gap:.5rem 1.5rem;margin-top:.8rem}
+  }
+  @media (min-width:2000px){:root{--maxw:1400px}}
+
+  /* ---------- Loader ---------- */
+  .loader{
+    position:fixed;inset:0;z-index:999;background:var(--bg);
+    display:flex;align-items:center;justify-content:center;
+    transition:opacity .5s ease;
+  }
+  .loader__mark{
+    width:clamp(64px,14vw,96px);height:auto;border-radius:10px;
+    animation:loaderPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes loaderPulse{0%,100%{opacity:.35}50%{opacity:1}}
+  .loader--done{opacity:0;pointer-events:none}
+
+  /* ---------- Reduced motion: static stack, no pin/scrub ---------- */
+  @media (prefers-reduced-motion:reduce){
+    .spine{height:auto}
+    .stage{position:relative;height:auto;overflow:visible}
+    .stage__video{position:relative;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+    .stage__scrim,.stage__grain,.scroll-hint,.rail{display:none}
+    .ov{
+      position:relative;inset:auto;opacity:1!important;visibility:visible!important;transform:none!important;
+      filter:none!important;min-height:auto;padding:clamp(3rem,9vh,6rem) var(--pad);
+      border-top:1px solid var(--line);
+    }
+    .ov--left,.ov--center,.ov--bottom{justify-content:flex-start;align-items:center;text-align:center}
+    .ov p,.ov .ov__inner{margin-inline:auto}
+  }
+</style>
 </head>
-
 <body>
 
-  <div id="loader" class="loader"><img class="loader__mark" src="rsj.jpg" alt="RS ज्वेलर्स"></div>
+<div id="loader" class="loader"><img class="loader__mark" src="rsj.jpg" alt="RS ज्वेलर्स"></div>
 
-  <header class="site">
-    <a class="brand" href="#top" aria-label="RS ज्वेलर्स — मुखपृष्ठ">
-      <img src="rsj.jpg" alt="RS ज्वेलर्स का लोगो — सोने का शील्ड और मुकुट मोनोग्राम">
-      <b>RS ज्वेलर्स</b>
-    </a>
-    <a class="nav-cta" href="https://wa.me/917869541656" target="_blank" rel="noopener"
-      aria-label="व्हाट्सएप पर संपर्क करें">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.7 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3 0-1.5.8-2.2 1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1l1.9.9c.3.2.5.2.5.4.1.2.1.8-.1 1.4Z" />
-      </svg>
-      व्हाट्सएप
-    </a>
-  </header>
+<header class="site">
+  <a class="brand" href="#top" aria-label="RS ज्वेलर्स — मुखपृष्ठ">
+    <img src="rsj.jpg" alt="RS ज्वेलर्स का लोगो — सोने का शील्ड और मुकुट मोनोग्राम">
+    <b>RS ज्वेलर्स</b>
+  </a>
+  <a class="nav-cta" href="https://wa.me/917869541656" target="_blank" rel="noopener" aria-label="व्हाट्सएप पर संपर्क करें">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.7 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3 0-1.5.8-2.2 1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1l1.9.9c.3.2.5.2.5.4.1.2.1.8-.1 1.4Z"/></svg>
+    व्हाट्सएप
+  </a>
+</header>
 
-  <a id="top"></a>
+<a id="top"></a>
 
-  <main>
-    <div class="spine" id="spine">
-      <div class="stage" id="stage">
-        <video class="stage__video" id="scrub" muted playsinline webkit-playsinline preload="auto"
-          disablepictureinpicture aria-hidden="true" poster="poster.jpg">
-          <source src="scrub_hd.mp4" type="video/mp4">
-        </video>
-        <div class="stage__scrim" aria-hidden="true"></div>
-        <div class="stage__grain" aria-hidden="true"></div>
+<main>
+<div class="spine" id="spine">
+  <div class="stage" id="stage">
+    <video class="stage__video" id="scrub"
+      muted playsinline webkit-playsinline preload="auto"
+      disablepictureinpicture aria-hidden="true" poster="poster.jpg">
+      <source src="scrub_hd.mp4" type="video/mp4">
+    </video>
+    <div class="stage__scrim" aria-hidden="true"></div>
+    <div class="stage__grain" aria-hidden="true"></div>
 
-        <!-- OV1 — हीरो / exploded array -->
-        <section class="ov ov--bottom" id="ov1" aria-label="परिचय">
-          <div class="ov__inner">
-            <h1>शुद्ध सोना, शुद्ध चाँदी, शुद्ध भरोसा</h1>
-            <p class="sub">बड़ा सराफा, इन्दौर से — तीन पीढ़ियों का हॉलमार्क ज्वेलरी शिल्प</p>
-            <a class="btn" href="https://wa.me/917869541656" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.7 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3 0-1.5.8-2.2 1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1l1.9.9c.3.2.5.2.5.4.1.2.1.8-.1 1.4Z" />
-              </svg>
-              व्हाट्सएप पर संपर्क करें
-            </a>
-          </div>
-        </section>
-
-        <!-- OV2 — कारीगरी / disassembled -->
-        <section class="ov ov--left" id="ov2" aria-label="कारीगरी">
-          <div class="ov__inner">
-            <span class="kicker">कारीगरी</span>
-            <h2>हर आभूषण, हाथों की कारीगरी</h2>
-            <p>सोना और चाँदी · थोक एवं फुटकर विक्रेता · हॉलमार्क ज्वेलरी निर्माता। हर टुकड़ा बड़ा सराफा की कार्यशाला में
-              गढ़ा जाता है।</p>
-          </div>
-        </section>
-
-        <!-- OV3 — शुद्धता / macro gem -->
-        <section class="ov ov--center" id="ov3" aria-label="शुद्धता">
-          <div class="ov__inner">
-            <span class="kicker">शुद्धता</span>
-            <h2>हॉलमार्क शुद्धता की गारंटी</h2>
-            <p>प्रमाणित सोना और चाँदी — हर टुकड़े पर, हर पीढ़ी के लिए भरोसा।</p>
-          </div>
-        </section>
-
-        <!-- OV4 — संपर्क / woman wearing -->
-        <section class="ov ov--bottom" id="ov4" aria-label="संपर्क">
-          <div class="ov__inner">
-            <span class="kicker">संपर्क</span>
-            <h2>RS ज्वेलर्स से जुड़िए</h2>
-            <div class="partners">
-              <div class="partner">
-                <b>अनामीशरण सोलंकी</b>
-                <a href="https://wa.me/917869541656" target="_blank" rel="noopener">7869541656</a>
-              </div>
-              <div class="partner">
-                <b>ऋषभ सिंह सोलंकी</b>
-                <a href="https://wa.me/919575970787" target="_blank" rel="noopener">9575970787</a>
-              </div>
-            </div>
-            <p class="ov4-addr">102-E पंचरत्न बिल्डिंग, बड़ा सराफा, इन्दौर</p>
-            <a class="btn" href="https://wa.me/917869541656" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.7 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3 0-1.5.8-2.2 1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1l1.9.9c.3.2.5.2.5.4.1.2.1.8-.1 1.4Z" />
-              </svg>
-              व्हाट्सएप पर संपर्क करें
-            </a>
-          </div>
-        </section>
-
-        <div class="scroll-hint" aria-hidden="true">स्क्रॉल करें ↓</div>
+    <!-- OV1 — हीरो / exploded array -->
+    <section class="ov ov--bottom" id="ov1" aria-label="परिचय">
+      <div class="ov__inner">
+        <h1>शुद्ध सोना, शुद्ध चाँदी, शुद्ध भरोसा</h1>
+        <p class="sub">बड़ा सराफा, इन्दौर से — तीन पीढ़ियों का हॉलमार्क ज्वेलरी शिल्प</p>
+        <a class="btn" href="https://wa.me/917869541656" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.7 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3 0-1.5.8-2.2 1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1l1.9.9c.3.2.5.2.5.4.1.2.1.8-.1 1.4Z"/></svg>
+          व्हाट्सएप पर संपर्क करें
+        </a>
       </div>
-    </div>
-  </main>
+    </section>
 
-  <div class="rail" aria-hidden="true">
-    <div class="rail__fill" id="railFill"></div>
+    <!-- OV2 — कारीगरी / disassembled -->
+    <section class="ov ov--left" id="ov2" aria-label="कारीगरी">
+      <div class="ov__inner">
+        <span class="kicker">कारीगरी</span>
+        <h2>हर आभूषण, हाथों की कारीगरी</h2>
+        <p>सोना और चाँदी · थोक एवं फुटकर विक्रेता · हॉलमार्क ज्वेलरी निर्माता। हर टुकड़ा बड़ा सराफा की कार्यशाला में गढ़ा जाता है।</p>
+      </div>
+    </section>
+
+    <!-- OV3 — शुद्धता / macro gem -->
+    <section class="ov ov--center" id="ov3" aria-label="शुद्धता">
+      <div class="ov__inner">
+        <span class="kicker">शुद्धता</span>
+        <h2>हॉलमार्क शुद्धता की गारंटी</h2>
+        <p>प्रमाणित सोना और चाँदी — हर टुकड़े पर, हर पीढ़ी के लिए भरोसा।</p>
+      </div>
+    </section>
+
+    <!-- OV4 — संपर्क / woman wearing -->
+    <section class="ov ov--bottom" id="ov4" aria-label="संपर्क">
+      <div class="ov__inner">
+        <span class="kicker">संपर्क</span>
+        <h2>RS ज्वेलर्स से जुड़िए</h2>
+        <div class="partners">
+          <div class="partner">
+            <b>अनामीशरण सोलंकी</b>
+            <a href="https://wa.me/917869541656" target="_blank" rel="noopener">7869541656</a>
+          </div>
+          <div class="partner">
+            <b>ऋषभ सिंह सोलंकी</b>
+            <a href="https://wa.me/919575970787" target="_blank" rel="noopener">9575970787</a>
+          </div>
+        </div>
+        <p class="ov4-addr">102-E पंचरत्न बिल्डिंग, बड़ा सराफा, इन्दौर</p>
+        <a class="btn" href="https://wa.me/917869541656" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.7 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3 0-1.5.8-2.2 1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1l1.9.9c.3.2.5.2.5.4.1.2.1.8-.1 1.4Z"/></svg>
+          व्हाट्सएप पर संपर्क करें
+        </a>
+      </div>
+    </section>
+
+    <div class="scroll-hint" aria-hidden="true">स्क्रॉल करें ↓</div>
   </div>
+</div>
+</main>
 
-  <footer>
-    <div class="foot">
-      <div>
-        <h3>हमसे मिलें</h3>
-        <p class="biz">सोना और चाँदी | थोक एवं फुटकर विक्रेता | हॉलमार्क ज्वेलरी निर्माता।</p>
-        <address>
-          RS ज्वेलर्स<br>
-          102-E पंचरत्न बिल्डिंग,<br>
-          बड़ा सराफा, इन्दौर
-        </address>
-        <div class="cta-row">
-          <a class="btn" href="https://wa.me/917869541656" target="_blank" rel="noopener">व्हाट्सएप पर संपर्क करें</a>
-        </div>
-      </div>
-      <div class="foot-contacts">
-        <div class="fc">
-          <small>भागीदार</small>
-          <b style="color:var(--text);font-family:'Hind';font-weight:600">अनामीशरण सोलंकी</b>
-          <a class="wa" href="https://wa.me/917869541656" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.7 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3 0-1.5.8-2.2 1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1l1.9.9c.3.2.5.2.5.4.1.2.1.8-.1 1.4Z" />
-            </svg>
-            7869541656
-          </a>
-        </div>
-        <div class="fc">
-          <small>भागीदार</small>
-          <b style="color:var(--text);font-family:'Hind';font-weight:600">ऋषभ सिंह सोलंकी</b>
-          <a class="wa" href="https://wa.me/919575970787" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.7 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3 0-1.5.8-2.2 1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1l1.9.9c.3.2.5.2.5.4.1.2.1.8-.1 1.4Z" />
-            </svg>
-            9575970787
-          </a>
-        </div>
-        <div class="fc">
-          <small>इंस्टाग्राम</small>
-          <a href="https://instagram.com/rsjewellersindore" target="_blank" rel="noopener">@rsjewellersindore</a>
-        </div>
+<div class="rail" aria-hidden="true"><div class="rail__fill" id="railFill"></div></div>
+
+<footer>
+  <div class="foot">
+    <div>
+      <h3>हमसे मिलें</h3>
+      <p class="biz">सोना और चाँदी | थोक एवं फुटकर विक्रेता | हॉलमार्क ज्वेलरी निर्माता।</p>
+      <address>
+        RS ज्वेलर्स<br>
+        102-E पंचरत्न बिल्डिंग,<br>
+        बड़ा सराफा, इन्दौर
+      </address>
+      <div class="cta-row">
+        <a class="btn" href="https://wa.me/917869541656" target="_blank" rel="noopener">व्हाट्सएप पर संपर्क करें</a>
       </div>
     </div>
-    <div class="foot-brand">
-      <img src="rsj.jpg" alt="RS ज्वेलर्स लोगो">
-      <div><strong style="color:var(--text)">RS ज्वेलर्स</strong><br><span
-          style="color:var(--muted);font-size:.85rem">बड़ा सराफा, इन्दौर</span></div>
+    <div class="foot-contacts">
+      <div class="fc">
+        <small>भागीदार</small>
+        <b style="color:var(--text);font-family:'Hind';font-weight:600">अनामीशरण सोलंकी</b>
+        <a class="wa" href="https://wa.me/917869541656" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.7 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3 0-1.5.8-2.2 1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1l1.9.9c.3.2.5.2.5.4.1.2.1.8-.1 1.4Z"/></svg>
+          7869541656
+        </a>
+      </div>
+      <div class="fc">
+        <small>भागीदार</small>
+        <b style="color:var(--text);font-family:'Hind';font-weight:600">ऋषभ सिंह सोलंकी</b>
+        <a class="wa" href="https://wa.me/919575970787" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.8 4.9-1.3A10 10 0 1 0 12 2Zm5.7 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5-.2-.2-1.2-1.6-1.2-3 0-1.5.8-2.2 1-2.5.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.3 1.1 2.3 1.5 2.6 1.6.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1l1.9.9c.3.2.5.2.5.4.1.2.1.8-.1 1.4Z"/></svg>
+          9575970787
+        </a>
+      </div>
+      <div class="fc">
+        <small>इंस्टाग्राम</small>
+        <a href="https://instagram.com/rsjewellersindore" target="_blank" rel="noopener">@rsjewellersindore</a>
+      </div>
     </div>
-    <p class="foot-legal">© RS ज्वेलर्स, इन्दौर। सोने और चाँदी के आभूषणों के निर्माता एवं होलसेल विक्रेता।</p>
-  </footer>
+  </div>
+  <div class="foot-brand">
+    <img src="rsj.jpg" alt="RS ज्वेलर्स लोगो">
+    <div><strong style="color:var(--text)">RS ज्वेलर्स</strong><br><span style="color:var(--muted);font-size:.85rem">बड़ा सराफा, इन्दौर</span></div>
+  </div>
+  <p class="foot-legal">© RS ज्वेलर्स, इन्दौर। सोने और चाँदी के आभूषणों के निर्माता एवं होलसेल विक्रेता।</p>
+</footer>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
-    integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"
-    integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script>
-    (function () {
-      "use strict";
-      var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      var video = document.getElementById("scrub");
-      var railFill = document.getElementById("railFill");
-      var loader = document.getElementById("loader");
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+(function(){
+  "use strict";
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var video  = document.getElementById("scrub");
+  var railFill = document.getElementById("railFill");
+  var loader = document.getElementById("loader");
 
-      var loaderShownAt = performance.now();
-      var LOADER_MIN_MS = 1800; // floor so it reads as a loading screen, not a flicker
-      function hideLoader() {
-        if (!loader) return;
-        var wait = Math.max(0, LOADER_MIN_MS - (performance.now() - loaderShownAt));
-        setTimeout(function () {
-          if (!loader) return;
-          loader.classList.add("loader--done");
-          loader.addEventListener("transitionend", function () { if (loader) loader.remove(); }, { once: true });
-        }, wait);
+  var loaderShownAt = performance.now();
+  var LOADER_MIN_MS = 1800; // floor so it reads as a loading screen, not a flicker
+  function hideLoader(){
+    if(!loader) return;
+    var wait = Math.max(0, LOADER_MIN_MS - (performance.now() - loaderShownAt));
+    setTimeout(function(){
+      if(!loader) return;
+      loader.classList.add("loader--done");
+      loader.addEventListener("transitionend", function(){ if(loader) loader.remove(); }, {once:true});
+    }, wait);
+  }
+  setTimeout(hideLoader, 10000); // safety net if an expected event never fires
+
+  // 4 overlay anchor timestamps (seconds), matched to scene beats. Video NEVER freezes —
+  // it scrubs continuously; overlays fade in/hold/out over the moving footage around these marks.
+  var MARKS = [1.0, 6.0, 10.5, 19.0];
+  var overlays = ["ov1","ov2","ov3","ov4"].map(function(id){return document.getElementById(id);});
+
+  // Reduced motion: no pin/scrub — quiet autoplay loop + static stacked overlays (CSS handles layout).
+  if(reduce){
+    video.setAttribute("loop","");
+    video.play().catch(function(){});
+    hideLoader();
+    return;
+  }
+
+  // enter transforms per overlay (vary the reveal, not one identical entrance)
+  var ENTER = [
+    {y:34},                       // ov1 rise
+    {x:-46},                      // ov2 slide from left
+    {scale:.92, filter:"blur(10px)"}, // ov3 focus-in
+    {y:44}                        // ov4 rise
+  ];
+
+  // Continuous scrub: whole video maps linearly to the pinned scroll distance; it never freezes.
+  // Overlays fade in/hold/out over the MOVING footage within a window around each MARK.
+  var END_VH = 6.5;   // full scrub distance (og pacing)
+  var WIN = 2.2;      // overlay half-window in video-seconds (fade-in + hold + fade-out span ~2*WIN)
+  var FADE = 0.7;     // fade-in / fade-out duration in video-seconds
+
+  // Butter scrub: GSAP sets a target; an independent rAF loop eases currentTime toward it
+  // and never fires a new seek while one is in flight (coalesces seeks the decoder can't
+  // keep up with). This is what kills the jitter — direct per-tick writes pile seeks unevenly.
+  var targetCT = 0, curCT = 0, seeking = false, rafId = 0;
+  function onSeeked(){ seeking = false; }
+  function smoothLoop(){
+    rafId = requestAnimationFrame(smoothLoop);
+    if(seeking) return;                       // decoder still busy — skip, don't queue
+    var d = targetCT - curCT;
+    if(Math.abs(d) < 1/120){ return; }        // close enough, don't thrash the decoder
+    curCT += d * 0.22;                         // lerp toward target (tune for glide vs lag)
+    seeking = true;
+    try{ video.currentTime = curCT; }catch(e){ seeking = false; }
+  }
+  function startSmooth(){
+    if(rafId) return;
+    curCT = targetCT = video.currentTime || 0;
+    video.addEventListener("seeked", onSeeked);
+    rafId = requestAnimationFrame(smoothLoop);
+  }
+
+  var st = null;                 // ScrollTrigger instance
+  var DUR = 0;                   // video duration (timeline length, 1 unit = 1 second)
+
+  function build(){
+    DUR = video.duration || 20;
+    var proxy = {ct: 0};
+    var tl = gsap.timeline({
+      scrollTrigger:{
+        trigger:".spine",
+        start:"top top",
+        end:function(){ return "+=" + Math.round(window.innerHeight * END_VH); },
+        pin:".stage",
+        scrub:true,
+        anticipatePin:1,
+        invalidateOnRefresh:true,
+        onUpdate:function(self){ if(railFill) railFill.style.transform = "scaleX(" + self.progress + ")"; }
       }
-      setTimeout(hideLoader, 10000); // safety net if an expected event never fires
+    });
 
-      // 4 overlay anchor timestamps (seconds), matched to scene beats. Video NEVER freezes —
-      // it scrubs continuously; overlays fade in/hold/out over the moving footage around these marks.
-      var MARKS = [1.0, 6.0, 10.5, 19.0];
-      var overlays = ["ov1", "ov2", "ov3", "ov4"].map(function (id) { return document.getElementById(id); });
+    // init overlays hidden
+    overlays.forEach(function(ov){ gsap.set(ov, {autoAlpha:0}); });
 
-      // Reduced motion: no pin/scrub — quiet autoplay loop + static stacked overlays (CSS handles layout).
-      if (reduce) {
-        video.setAttribute("loop", "");
-        video.play().catch(function () { });
-        hideLoader();
-        return;
+    // one continuous scrub spanning the whole timeline — video keeps moving throughout
+    tl.to(proxy, {ct:DUR, duration:DUR, ease:"none",
+      onUpdate:function(){ targetCT = proxy.ct; }}, 0);
+    startSmooth();
+
+    // overlays layered on top at absolute positions; footage does not pause under them
+    MARKS.forEach(function(t, i){
+      var ov = overlays[i];
+      var inAt  = Math.max(0, t - WIN);
+      var outAt = Math.min(DUR - FADE, t + WIN - FADE);
+      tl.fromTo(ov, Object.assign({autoAlpha:0}, ENTER[i]),
+        {autoAlpha:1, x:0, y:0, scale:1, filter:"blur(0px)", duration:FADE, ease:"power3.out"}, inAt);
+      // last overlay (contact CTA) stays visible through the end
+      if(i < MARKS.length - 1){
+        tl.to(ov, {autoAlpha:0, duration:FADE, ease:"power2.in"}, outAt);
       }
+    });
 
-      // enter transforms per overlay (vary the reveal, not one identical entrance)
-      var ENTER = [
-        { y: 34 },                       // ov1 rise
-        { x: -46 },                      // ov2 slide from left
-        { scale: .92, filter: "blur(10px)" }, // ov3 focus-in
-        { y: 44 }                        // ov4 rise
-      ];
+    st = tl.scrollTrigger;
+    exposeMap();
+  }
 
-      // Continuous scrub: whole video maps linearly to the pinned scroll distance; it never freezes.
-      // Overlays fade in/hold/out over the MOVING footage within a window around each MARK.
-      var END_VH = 6.5;   // full scrub distance (og pacing)
-      var WIN = 2.2;      // overlay half-window in video-seconds (fade-in + hold + fade-out span ~2*WIN)
-      var FADE = 0.7;     // fade-in / fade-out duration in video-seconds
+  // expose deterministic scroll->{currentTime,opacity} map for QA
+  function exposeMap(){
+    if(!st) return;
+    var span = st.end - st.start;
+    function yAt(sec){ return Math.round(st.start + (sec/DUR) * span); }
+    var marks = MARKS.map(function(t, i){
+      return {idx:i, t:t, scrollY:yAt(t), progress:t/DUR};
+    });
+    window.__scrub = {
+      ready:true,
+      continuous:true,        // video never freezes; ct is a pure function of scroll
+      duration: DUR,
+      marks: marks,           // overlay centers (video moving underneath)
+      pauses: marks,          // back-compat alias
+      stStart: st.start, stEnd: st.end, endVH: END_VH
+    };
+  }
 
-      // Butter scrub: GSAP sets a target; an independent rAF loop eases currentTime toward it
-      // and never fires a new seek while one is in flight (coalesces seeks the decoder can't
-      // keep up with). This is what kills the jitter — direct per-tick writes pile seeks unevenly.
-      var targetCT = 0, curCT = 0, seeking = false, rafId = 0;
-      function onSeeked() { seeking = false; }
-      function smoothLoop() {
-        rafId = requestAnimationFrame(smoothLoop);
-        if (seeking) return;                       // decoder still busy — skip, don't queue
-        var d = targetCT - curCT;
-        if (Math.abs(d) < 1 / 120) { return; }        // close enough, don't thrash the decoder
-        curCT += d * 0.22;                         // lerp toward target (tune for glide vs lag)
-        seeking = true;
-        try { video.currentTime = curCT; } catch (e) { seeking = false; }
-      }
-      function startSmooth() {
-        if (rafId) return;
-        curCT = targetCT = video.currentTime || 0;
-        video.addEventListener("seeked", onSeeked);
-        rafId = requestAnimationFrame(smoothLoop);
-      }
+  // iOS Safari decoder priming: muted play()+pause() once (no gesture needed) before scrub seeking.
+  function prime(){
+    var p = video.play();
+    if(p && p.then){ return p.then(function(){ video.pause(); }).catch(function(){ try{video.pause();}catch(e){}}); }
+    try{ video.pause(); }catch(e){}
+    return Promise.resolve();
+  }
 
-      var st = null;                 // ScrollTrigger instance
-      var DUR = 0;                   // video duration (timeline length, 1 unit = 1 second)
-
-      function build() {
-        DUR = video.duration || 20;
-        var proxy = { ct: 0 };
-        var tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: ".spine",
-            start: "top top",
-            end: function () { return "+=" + Math.round(window.innerHeight * END_VH); },
-            pin: ".stage",
-            scrub: true,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-            onUpdate: function (self) { if (railFill) railFill.style.transform = "scaleX(" + self.progress + ")"; }
-          }
-        });
-
-        // init overlays hidden
-        overlays.forEach(function (ov) { gsap.set(ov, { autoAlpha: 0 }); });
-
-        // one continuous scrub spanning the whole timeline — video keeps moving throughout
-        tl.to(proxy, {
-          ct: DUR, duration: DUR, ease: "none",
-          onUpdate: function () { targetCT = proxy.ct; }
-        }, 0);
-        startSmooth();
-
-        // overlays layered on top at absolute positions; footage does not pause under them
-        MARKS.forEach(function (t, i) {
-          var ov = overlays[i];
-          var inAt = Math.max(0, t - WIN);
-          var outAt = Math.min(DUR - FADE, t + WIN - FADE);
-          tl.fromTo(ov, Object.assign({ autoAlpha: 0 }, ENTER[i]),
-            { autoAlpha: 1, x: 0, y: 0, scale: 1, filter: "blur(0px)", duration: FADE, ease: "power3.out" }, inAt);
-          // last overlay (contact CTA) stays visible through the end
-          if (i < MARKS.length - 1) {
-            tl.to(ov, { autoAlpha: 0, duration: FADE, ease: "power2.in" }, outAt);
-          }
-        });
-
-        st = tl.scrollTrigger;
+  function start(){
+    prime().then(function(){
+      Promise.resolve(document.fonts && document.fonts.ready).then(function(){
+        build();
+        // measure only after metadata + fonts settled
+        ScrollTrigger.refresh();
         exposeMap();
-      }
+        hideLoader();
+      });
+    });
+  }
 
-      // expose deterministic scroll->{currentTime,opacity} map for QA
-      function exposeMap() {
-        if (!st) return;
-        var span = st.end - st.start;
-        function yAt(sec) { return Math.round(st.start + (sec / DUR) * span); }
-        var marks = MARKS.map(function (t, i) {
-          return { idx: i, t: t, scrollY: yAt(t), progress: t / DUR };
-        });
-        window.__scrub = {
-          ready: true,
-          continuous: true,        // video never freezes; ct is a pure function of scroll
-          duration: DUR,
-          marks: marks,           // overlay centers (video moving underneath)
-          pauses: marks,          // back-compat alias
-          stStart: st.start, stEnd: st.end, endVH: END_VH
-        };
-      }
+  if(video.readyState >= 1){ start(); }
+  else{ video.addEventListener("loadedmetadata", start, {once:true}); }
 
-      // iOS Safari decoder priming: muted play()+pause() once (no gesture needed) before scrub seeking.
-      function prime() {
-        var p = video.play();
-        if (p && p.then) { return p.then(function () { video.pause(); }).catch(function () { try { video.pause(); } catch (e) { } }); }
-        try { video.pause(); } catch (e) { }
-        return Promise.resolve();
-      }
-
-      function start() {
-        prime().then(function () {
-          Promise.resolve(document.fonts && document.fonts.ready).then(function () {
-            build();
-            // measure only after metadata + fonts settled
-            ScrollTrigger.refresh();
-            exposeMap();
-            hideLoader();
-          });
-        });
-      }
-
-      if (video.readyState >= 1) { start(); }
-      else { video.addEventListener("loadedmetadata", start, { once: true }); }
-
-      window.addEventListener("resize", function () { exposeMap(); }, { passive: true });
-    })();
-  </script>
+  window.addEventListener("resize", function(){ exposeMap(); }, {passive:true});
+})();
+</script>
 </body>
-
 </html>
