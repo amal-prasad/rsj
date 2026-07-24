@@ -391,7 +391,26 @@
   var WIN = 2.2;      // overlay half-window in video-seconds (fade-in + hold + fade-out span ~2*WIN)
   var FADE = 0.7;     // fade-in / fade-out duration in video-seconds
 
-  function writeCT(t){ try{ video.currentTime = t; }catch(e){} }
+  // Butter scrub: GSAP sets a target; an independent rAF loop eases currentTime toward it
+  // and never fires a new seek while one is in flight (coalesces seeks the decoder can't
+  // keep up with). This is what kills the jitter — direct per-tick writes pile seeks unevenly.
+  var targetCT = 0, curCT = 0, seeking = false, rafId = 0;
+  function onSeeked(){ seeking = false; }
+  function smoothLoop(){
+    rafId = requestAnimationFrame(smoothLoop);
+    if(seeking) return;                       // decoder still busy — skip, don't queue
+    var d = targetCT - curCT;
+    if(Math.abs(d) < 1/120){ return; }        // close enough, don't thrash the decoder
+    curCT += d * 0.22;                         // lerp toward target (tune for glide vs lag)
+    seeking = true;
+    try{ video.currentTime = curCT; }catch(e){ seeking = false; }
+  }
+  function startSmooth(){
+    if(rafId) return;
+    curCT = targetCT = video.currentTime || 0;
+    video.addEventListener("seeked", onSeeked);
+    rafId = requestAnimationFrame(smoothLoop);
+  }
 
   var st = null;                 // ScrollTrigger instance
   var DUR = 0;                   // video duration (timeline length, 1 unit = 1 second)
@@ -405,7 +424,7 @@
         start:"top top",
         end:function(){ return "+=" + Math.round(window.innerHeight * END_VH); },
         pin:".stage",
-        scrub:0.35,
+        scrub:true,
         anticipatePin:1,
         invalidateOnRefresh:true,
         onUpdate:function(self){ if(railFill) railFill.style.transform = "scaleX(" + self.progress + ")"; }
@@ -417,7 +436,8 @@
 
     // one continuous scrub spanning the whole timeline — video keeps moving throughout
     tl.to(proxy, {ct:DUR, duration:DUR, ease:"none",
-      onUpdate:function(){ writeCT(proxy.ct); }}, 0);
+      onUpdate:function(){ targetCT = proxy.ct; }}, 0);
+    startSmooth();
 
     // overlays layered on top at absolute positions; footage does not pause under them
     MARKS.forEach(function(t, i){
