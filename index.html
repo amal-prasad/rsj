@@ -8,7 +8,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Anek+Devanagari:wdth,wght@75..125,100..800&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet" />
   <link rel="icon" href="assets/logo.jpg" />
 
   <style>
@@ -19,7 +19,7 @@
       --sw-ink-soft: #B9A87E;   /* muted gold */
       --sw-accent: #C9A227;     /* gold — ambient light */
       --sw-font-display: 'Tiro Devanagari Hindi', Georgia, serif;
-      --sw-font-body: 'Hind', system-ui, sans-serif;
+      --sw-font-body: 'Anek Devanagari', system-ui, sans-serif;
     }
     /* Luxury black/gold: keep the warm glow, drop the drifting particles (read busy). */
     .sw-particles { display: none !important; }
@@ -32,12 +32,16 @@
       box-shadow: none;
     }
 
-    /* Font pairing fix: Tiro Devanagari Hindi ships one weight (400) — the engine's
-       default font-weight:700 on eyebrow/brand-name synthetic-bolds it, which reads
-       inconsistent next to Hind's real weights everywhere else. Reserve Tiro for the
-       big serif headline only (natively 400); move eyebrow/brand-name to Hind bold. */
+    /* Type system. Display: Tiro Devanagari Hindi — a real Devanagari serif, natively 400
+       only, so it is never synthetic-bolded; reserved for the headline alone. Text: Anek
+       Devanagari, one variable file (wght 100–800 + a width axis) carrying real weights
+       across BOTH scripts, so mixed lines like "Instagram" and "BIS प्रमाणित" set in one
+       face instead of fracturing. Replaces four static Hind weights — net lighter.
+       No letter-spacing anywhere on Devanagari: tracking breaks the shirorekha. */
     .sw-copy__title { font-weight: 400; }
-    .sw-copy__eyebrow, .sw-brand__name {
+    /* The engine already sets the eyebrow in the body face; only the brand mark still
+       needs moving off Tiro, which has no bold to give it. */
+    .sw-brand__name {
       font-family: var(--sw-font-body);
       font-weight: 700;
     }
@@ -105,7 +109,7 @@
       if (document.readyState === 'complete') r();
       else window.addEventListener('load', r, { once: true });
     });
-    // (c) fonts (Tiro Devanagari + Hind) — avoids a reflow behind the veil
+    // (c) fonts (Tiro Devanagari + Anek Devanagari) — avoids a reflow behind the veil
     const fontsReady = (document.fonts && document.fonts.ready) || Promise.resolve();
 
     let hidden = false;
@@ -151,7 +155,9 @@
           clip: 'assets/vid/2.mp4',
           clipMobile: 'assets/vid/2-m.mp4',
           accent: '#C9A227',
-          scroll: 1.0,                                   // brisk transit
+          scroll: 1.5, linger: 0.5,                      // was 1.0/no-linger — burned a 5s clip
+                                                         // in 1vh (fastest seeks on the page) and
+                                                         // flashed the copy through its 0.5 peak
           eyebrow: 'हर टुकड़े में शिल्प',
           title: 'बारीकी से गढ़ा हुआ।',
           body: 'हर गहना हाथ से गढ़ा, हर बारीकी पर ध्यान।',

@@ -1,0 +1,52 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - link "RS ज्वेलर्स" [ref=e6] [cursor=pointer]:
+      - /url: "#top"
+    - navigation [ref=e9]:
+      - button "विरासत" [ref=e10] [cursor=pointer]
+      - button "शिल्प" [ref=e11] [cursor=pointer]
+      - button "शुद्धता" [ref=e12] [cursor=pointer]
+      - button "भरोसा" [ref=e13] [cursor=pointer]
+    - link "Instagram" [ref=e14] [cursor=pointer]:
+      - /url: https://instagram.com/rsjewellersindore
+  - generic:
+    - article [ref=e15]:
+      - generic [ref=e16]: 01 / 04
+      - generic [ref=e17]: शुद्ध सोना, शुद्ध चाँदी
+      - heading "एक विरासत, एक पहचान।" [level=2] [ref=e18]
+      - paragraph [ref=e19]: बड़ा सराफा, इंदौर — पीढ़ियों से चला आ रहा भरोसा।
+      - list [ref=e20]:
+        - listitem [ref=e21]: बड़ा सराफा
+        - listitem [ref=e22]: इंदौर
+    - article:
+      - generic: 02 / 04
+      - generic: हर टुकड़े में शिल्प
+      - heading "बारीकी से गढ़ा हुआ।" [level=2]
+      - paragraph: हर गहना हाथ से गढ़ा, हर बारीकी पर ध्यान।
+      - list:
+        - listitem: हस्तनिर्मित
+        - listitem: बारीक शिल्प
+    - article:
+      - generic: 03 / 04
+      - generic: असली चमक
+      - heading "शुद्धता जो दिखती है।" [level=2]
+      - paragraph: हॉलमार्क शुद्धता — जो आँखों से भी झलके।
+      - list:
+        - listitem: हॉलमार्क
+        - listitem: BIS प्रमाणित
+    - article:
+      - generic: 04 / 04
+      - generic: और यह सब मिलकर बनता है
+      - heading "शुद्ध सोना, शुद्ध चाँदी, शुद्ध भरोसा।" [level=2]
+      - paragraph: आज ही जुड़ें — RS ज्वेलर्स, इंदौर।
+      - generic [ref=e23]:
+        - link "Instagram @rsjewellersindore" [ref=e24] [cursor=pointer]:
+          - /url: https://instagram.com/rsjewellersindore
+        - link "कॉल / WhatsApp" [ref=e25] [cursor=pointer]:
+          - /url: https://wa.me/917869541656
+  - generic [ref=e26]:
+    - button "विरासत" [ref=e27] [cursor=pointer]
+    - button "शिल्प" [ref=e29] [cursor=pointer]
+    - button "शुद्धता" [ref=e31] [cursor=pointer]
+    - button "भरोसा" [ref=e33] [cursor=pointer]
+  - generic [ref=e35]: स्क्रॉल करें

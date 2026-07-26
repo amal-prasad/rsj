@@ -153,7 +153,6 @@ function mountScrollWorld(container, config) {
   SECTIONS.forEach((s, i) => {
     const c = el('article', 'sw-copy'); c.style.setProperty('--sw-accent', s.accent || '');
     c.innerHTML =
-      `<span class="sw-copy__num">${pad(i + 1)} / ${pad(N)}</span>` +
       (s.eyebrow ? `<span class="sw-copy__eyebrow">${esc(s.eyebrow)}</span>` : '') +
       (s.title ? `<h2 class="sw-copy__title">${esc(s.title)}</h2>` : '') +
       (s.body ? `<p class="sw-copy__body">${esc(s.body)}</p>` : '') +
@@ -180,20 +179,35 @@ function mountScrollWorld(container, config) {
   const lingerEase = (x, L) => { L = clamp(L); const c = x - 0.5; return (1 - L) * x + L * (4 * c * c * c + 0.5); };
   let vh = window.innerHeight, stageX = 0, totalW = 0, activeIndex = -1, ticking = false;
   let laidOutW = window.innerWidth;   // width the current layout was computed at (see onResize)
+  // svh probe: 100svh holds steady while the URL bar slides (unlike window.innerHeight),
+  // so anchoring vh to this element's height keeps JS scroll math and the fixed CSS
+  // layers agreeing on one viewport. offsetHeight is 0 pre-layout / without svh support.
+  const probe = el('div');
+  probe.style.cssText = 'position:absolute;top:0;left:0;width:0;height:100svh;pointer-events:none;visibility:hidden;';
+  container.appendChild(probe);
 
   // Two scrub states — the equivalent of a gsap.matchMedia() desktop/mobile split.
-  // dist  scales total scroll distance: phones cover the film in less page height
-  // eps   min currentTime delta before a seek is issued (bigger = fewer decodes)
-  // lerp  how fast `cur` chases `target` (slower = fewer distinct seek targets/frame)
+  // dist  scales total scroll distance: phones need MORE page height per video frame
+  //       than desktop, not less — a phone decoder seeks slower, so the same 600-frame
+  //       clip needs a gentler px/frame ratio or it outruns the decoder. Bigger dist
+  //       eases that ratio; it does not "spread the film thinner."
+  // eps   min currentTime delta (seconds) before a seek is issued; must clear a full
+  //       frame (1/30 ≈ .033s) to actually gate anything — a sub-frame value never gates.
+  // lerp  how fast `cur` chases `target` per rAF tick (slower = fewer distinct seek targets/frame)
   // Desktop numbers are the engine's current values — desktop behaviour is unchanged.
-  const MOBILE  = { dist: 0.60, eps: 0.020, lerp: 0.10 };
+  // ponytail: tuned for a mid-range Android decoder; raise dist if a slower device stutters
+  const MOBILE  = { dist: 1.25, eps: 0.033, lerp: 0.16 };
   const DESKTOP = { dist: 1.00, eps: 0.008, lerp: 0.18 };
   const state = () => (isMobile() ? MOBILE : DESKTOP);
 
   function layout() {
     const prevLen = totalW * vh;
     const frac = prevLen ? (window.scrollY || 0) / prevLen : 0;
-    vh = window.innerHeight;
+    const wasMobile = isMobile();
+    // Read the probe, not window.innerHeight: innerHeight tracks the *visual* viewport
+    // (it drops ~70px the moment the URL bar slides in), while the fixed layers are sized
+    // in 100svh. Reading both from svh keeps the scroll math and the CSS on one number.
+    vh = probe.offsetHeight || window.innerHeight;
     laidOutW = window.innerWidth;
     stageX = window.innerWidth > 860 ? 4 : 0;
     const k = state().dist;
@@ -201,9 +215,11 @@ function mountScrollWorld(container, config) {
     SEGMENTS.forEach(s => { s.start = off * vh; off += s.w * k; s.end = off * vh; });
     totalW = off;
     track.style.height = (totalW * vh + vh) + 'px';   // +1vh so the last flight completes
-    // Track length changes when the breakpoint is crossed (rotation), so hold the
-    // reader's place proportionally instead of dumping them into a different scene.
-    if (frac && Math.abs(totalW * vh - prevLen) > 1) window.scrollTo(0, frac * totalW * vh);
+    // Crossing the 860px breakpoint swaps `dist`, which rescales the whole track — hold the
+    // reader's place proportionally instead of dumping them into a different scene. Gate on
+    // the breakpoint itself, NOT on track length: a URL-bar slide moves track length by
+    // ~330px, and scrollTo-ing mid-gesture is exactly the "page jumps" bug.
+    if (frac && isMobile() !== wasMobile) window.scrollTo(0, frac * totalW * vh);
     read();
   }
 
@@ -246,7 +262,7 @@ function mountScrollWorld(container, config) {
       const s = SEGMENTS[i];
       if (y > s.start - 1.6 * vh && y < s.end + 1.6 * vh) loadClip(s);
       const local = clamp((y - s.start) / (s.end - s.start), 0, 1);
-      s.target = s.linger ? lingerEase(local, s.linger) : local;
+      s.target = s.linger ? lingerEase(local, s.linger * (isMobile() ? 0.5 : 1)) : local;
       let outside = 0;
       if (y < s.start) outside = s.start - y; else if (y > s.end) outside = y - s.end;
       const op = smooth(1 - outside / fade);
@@ -262,13 +278,24 @@ function mountScrollWorld(container, config) {
       const seg = SECTIONS[i]._seg;
       const pr = clamp((y - seg.start) / (seg.end - seg.start), 0, 1);
       const before = y < seg.start, after = y > seg.end;
-      let cop;
-      if (i === 0) cop = after ? 0 : smooth(1 - pr / 0.62);            // greets on landing
-      else if (i === N - 1) cop = before ? 0 : smooth(pr / 0.4);       // holds CTA at the end
-      else cop = (before || after) ? 0 : smooth(1 - Math.abs(pr - 0.5) / 0.5);
+      // cop = the opacity envelope (rises then falls). rev = the shirorekha wipe, which must
+      // be MONOTONE and must be finished while the copy is at full opacity — driving the wipe
+      // off raw `pr` left the hero undrawn at rest and un-drew the middles as they peaked.
+      let cop, rev;
+      if (i === 0) {                                                   // greets on landing
+        cop = after ? 0 : smooth(1 - pr / 0.62);
+        rev = 1;                                                       // hero draws once on load, in CSS
+      } else if (i === N - 1) {                                        // holds CTA at the end
+        cop = before ? 0 : smooth(pr / 0.4);
+        rev = smooth(clamp(pr / 0.55, 0, 1));                          // finale draws slower than the middles
+      } else {
+        cop = (before || after) ? 0 : smooth(1 - Math.abs(pr - 0.5) / 0.5);
+        rev = smooth(clamp(pr / 0.34, 0, 1));                          // complete well before the 0.5 peak
+      }
       const c = copies[i];
       c.style.opacity = cop;
       c.style.transform = reduce ? 'none' : `translateY(${(0.5 - pr) * 4}vh)`;
+      c.style.setProperty('--p', rev);
       c.style.pointerEvents = cop > 0.5 ? 'auto' : 'none';
     }
 
@@ -292,15 +319,19 @@ function mountScrollWorld(container, config) {
     for (let i = 0; i < NSEG; i++) {
       const s = SEGMENTS[i];
       if (!s.hasClip || !s.ready || !s.video) continue;
-      // Never queue a seek while the decoder is still resolving the last one.
-      // On phones a fast flick would otherwise pile up seeks and freeze the clip;
-      // cur keeps lerping, so we snap to the latest target the moment it's free.
-      if (s.video.seeking) continue;
       if (!s.visible && Math.abs(s.cur - s.target) < 0.002) continue;
+      // cur converges every frame regardless of decoder state — only ISSUING a new
+      // seek is gated below, so cur no longer freezes for the whole decode on a phone.
       s.cur += (s.target - s.cur) * (reduce ? 1 : st.lerp);
+      // Never queue a seek while the decoder is still resolving the last one.
+      // On phones a fast flick would otherwise pile up seeks and freeze the clip.
+      if (s.video.seeking) continue;
       const dur = s.video.duration || 1;
       const t = clamp(s.cur, 0, 0.999) * dur;
-      if (Math.abs(s.video.currentTime - t) > st.eps) { try { s.video.currentTime = t; } catch (e) {} }
+      if (Math.abs(s.video.currentTime - t) > st.eps) {
+        // ponytail: GOP≈4 caps fastSeek error at ~4 frames; drop this branch if it reads visibly
+        try { if (isMobile() && s.video.fastSeek) s.video.fastSeek(t); else s.video.currentTime = t; } catch (e) {}
+      }
     }
     requestAnimationFrame(raf);
   }
@@ -343,19 +374,25 @@ function mountScrollWorld(container, config) {
   // touch we ignore height-only changes and only relayout when the width actually
   // changes (rotation still comes through orientationchange). layout() records the
   // width it laid out at.
+  // Re-read the media query instead of trusting the value captured at mount: DevTools
+  // emulation, Android with a paired mouse or stylus, DeX and foldables in desktop mode
+  // all report this false, and they were getting a full relayout on every URL-bar slide.
   function onResize() {
-    if (coarse && window.innerWidth === laidOutW) return;
+    const touch = window.matchMedia('(hover: none) and (pointer: coarse)').matches || smallMQ.matches;
+    if (touch && window.innerWidth === laidOutW) return;
     layout();
   }
   window.addEventListener('resize', onResize);
   window.addEventListener('orientationchange', layout);
-  window.addEventListener('load', layout);
+  // onResize, not layout: `load` fires after ~2.2MB of posters settle, by which time the
+  // URL bar has usually moved. Going through layout() directly bypassed the touch guard
+  // and could scrollTo a reader who is already scrolling behind the loader veil.
+  window.addEventListener('load', onResize);
   layout(); laidOut = true; maybeReady();
   requestAnimationFrame(raf);
 
   // ---- helpers ----
   function el(tag, cls) { const n = document.createElement(tag); if (cls) n.className = cls; return n; }
-  function pad(n) { return String(n).padStart(2, '0'); }
   function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
   function ctaBtns(cta) {
     let h = '';
@@ -389,8 +426,15 @@ function injectCSS() {
     --sw-font-display:ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;
     --sw-font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
     color:var(--sw-ink);font-family:var(--sw-font-body);}
-  html,body{margin:0;background:var(--sw-bg,#F5EDE0);overflow-x:hidden;}
-  .sw-sky{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:var(--sw-bg);}
+  /* overflow-x on html propagates to the viewport; repeating it on body only makes body a
+     redundant scroll container, a known source of position:fixed repaint glitches on iOS. */
+  html{overflow-x:hidden;}
+  html,body{margin:0;background:var(--sw-bg,#F5EDE0);}
+  /* The pinned layers are sized in svh (the *small* viewport height, i.e. URL bar showing).
+     inset:0 resolves against the dynamic viewport, so the layers grew and shrank ~70px
+     under scroll math that used a fixed vh — that mismatch is the "page slides up" bug.
+     svh never changes while the bar slides. The plain vh line is the pre-svh fallback. */
+  .sw-sky{position:fixed;top:0;left:0;right:0;height:100vh;height:100svh;z-index:0;overflow:hidden;pointer-events:none;background:var(--sw-bg);}
   .sw-sky__grad{position:absolute;inset:-10%;background:linear-gradient(178deg,color-mix(in srgb,var(--sw-accent) 12%,var(--sw-bg)) 0%,var(--sw-bg) 55%,color-mix(in srgb,var(--sw-accent) 6%,var(--sw-bg)) 100%);}
   .sw-sky__glow{position:absolute;inset:0;background:radial-gradient(60% 42% at 74% 16%,color-mix(in srgb,var(--sw-accent) 22%,transparent),transparent 70%),radial-gradient(46% 34% at 50% 50%,color-mix(in srgb,#fff 45%,transparent),transparent 70%);}
   .sw-particles{position:absolute;inset:-6% -2%;will-change:transform;}
@@ -404,27 +448,44 @@ function injectCSS() {
   .sw-topbar{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:clamp(14px,2.4vw,26px) clamp(18px,5vw,64px);}
   .sw-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--sw-ink);}
   .sw-brand__mark{width:24px;height:28px;border-radius:7px 7px 10px 10px;background:linear-gradient(160deg,var(--sw-accent),color-mix(in srgb,var(--sw-accent) 60%,#000));box-shadow:0 6px 14px color-mix(in srgb,var(--sw-accent) 40%,transparent);}
-  .sw-brand__name{font-family:var(--sw-font-display);font-weight:700;font-size:1.1rem;}
+  .sw-brand__name{font-family:var(--sw-font-display);font-weight:700;font-size:1.1rem;letter-spacing:0;}
   .sw-nav{display:flex;gap:4px;padding:5px;background:color-mix(in srgb,#fff 55%,transparent);backdrop-filter:blur(10px);border:1px solid color-mix(in srgb,var(--sw-accent) 16%,transparent);border-radius:999px;}
   .sw-nav__item{font:inherit;font-size:.82rem;color:var(--sw-ink-soft);border:0;background:transparent;cursor:pointer;padding:7px 14px;border-radius:999px;transition:color .25s,background .25s;}
   .sw-nav__item:hover{color:var(--sw-ink);} .sw-nav__item.is-active{color:#fff;background:var(--sw-accent);}
-  .sw-topcta{text-decoration:none;font-weight:600;font-size:.9rem;color:#fff;background:var(--sw-ink);padding:10px 20px;border-radius:999px;white-space:nowrap;}
-  .sw-stage{position:fixed;inset:0;z-index:10;pointer-events:none;}
+  /* Was #fff on var(--sw-ink) (cream) — ~1.1:1, unreadable, and it sat on the footage as a
+     white decal. Same gold/near-black pairing as .sw-btn--primary, so the page has one
+     call-to-action colour instead of two. */
+  .sw-topcta{text-decoration:none;font-weight:600;font-size:.9rem;color:#0A0A0A;background:var(--sw-accent);padding:10px 20px;border-radius:999px;white-space:nowrap;}
+  .sw-stage{position:fixed;top:0;left:0;right:0;height:100vh;height:100svh;z-index:10;pointer-events:none;}
   .sw-scene{position:absolute;inset:0;opacity:0;overflow:hidden;will-change:opacity;}
   .sw-scene__video,.sw-scene__still{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 42%;}
   .sw-scene__still{will-change:transform;} .sw-scene.has-clip .sw-scene__still{opacity:0;} .sw-scene__video{z-index:1;}
-  .sw-copylayer{position:fixed;inset:0;z-index:20;pointer-events:none;}
+  .sw-copylayer{position:fixed;top:0;left:0;right:0;height:100vh;height:100svh;z-index:20;pointer-events:none;}
   .sw-copylayer::before{content:"";position:absolute;inset:0;width:min(58vw,780px);background:linear-gradient(90deg,var(--sw-bg) 0%,color-mix(in srgb,var(--sw-bg) 82%,transparent) 34%,color-mix(in srgb,var(--sw-bg) 40%,transparent) 62%,transparent 100%);}
   .sw-copy{position:absolute;left:clamp(18px,5vw,64px);top:50%;transform:translateY(-50%);width:min(42vw,460px);opacity:0;will-change:opacity,transform;}
-  .sw-copy__num{font-family:ui-monospace,Menlo,monospace;font-size:.74rem;letter-spacing:.12em;color:var(--sw-ink-soft);}
-  .sw-copy__eyebrow{display:block;margin-top:18px;font-family:var(--sw-font-display);font-weight:700;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--sw-accent);}
-  .sw-copy__title{font-family:var(--sw-font-display);font-weight:700;color:var(--sw-ink);font-size:clamp(2rem,4.4vw,3.5rem);line-height:1.03;margin:12px 0 0;letter-spacing:-.01em;text-shadow:0 2px 20px color-mix(in srgb,var(--sw-bg) 70%,transparent);}
-  .sw-copy__body{margin-top:18px;font-size:clamp(1rem,1.25vw,1.14rem);line-height:1.55;color:color-mix(in srgb,var(--sw-ink) 78%,var(--sw-ink-soft));max-width:40ch;text-shadow:0 1px 12px color-mix(in srgb,var(--sw-bg) 90%,transparent);}
+  .sw-copy__eyebrow{position:relative;display:block;margin-top:18px;padding-left:34px;font-family:var(--sw-font-body);font-weight:600;font-size:.8rem;letter-spacing:0;color:var(--sw-accent);}
+  .sw-copy__eyebrow::before{content:"";position:absolute;left:0;top:50%;width:24px;height:2px;background:var(--sw-accent);transform:scaleX(var(--p,1));transform-origin:left;}
+  .sw-copy__title{font-family:var(--sw-font-display);font-weight:700;color:var(--sw-ink);font-size:clamp(2rem,4.4vw,3.5rem);line-height:1.2;margin:12px 0 0;letter-spacing:0;text-wrap:balance;text-shadow:0 2px 20px color-mix(in srgb,var(--sw-bg) 70%,transparent);clip-path:inset(0 calc((1 - var(--p,1)) * 100%) 0 0);}
+  /* The hero is already at full opacity when the loader lifts, so it can't wipe on scroll —
+     it draws once, on its own, as the first thing the visitor sees. */
+  .sw-copy:nth-of-type(4n+1) .sw-copy__title{animation:sw-draw 900ms cubic-bezier(0.16,1,0.3,1) both;}
+  @keyframes sw-draw{from{clip-path:inset(0 100% 0 0);}to{clip-path:inset(0 0 0 0);}}
+  /* ponytail: clip-path repaints per frame, but only on a 2-line text block and only while
+     its section is on screen. If a slow phone stutters, change this to clip-path:none under
+     @media (hover:none) and leave mobile on opacity alone. */
+  @media (prefers-reduced-motion:reduce){
+    /* The hero selector is repeated here on purpose: its rule is (0,3,0) and its
+       animation-fill-mode:both forward-fill beats a normal declaration outright, so a bare
+       .sw-copy__title lost both ways and the hero kept wiping under reduced motion. */
+    .sw-copy__title,.sw-copy:nth-of-type(4n+1) .sw-copy__title{clip-path:none;animation:none;}
+    .sw-copy__eyebrow::before{transform:none;}
+  }
+  .sw-copy__body{margin-top:18px;font-size:clamp(1rem,1.25vw,1.14rem);line-height:1.7;font-weight:400;color:color-mix(in srgb,var(--sw-ink) 92%,var(--sw-ink-soft));max-width:60ch;text-shadow:0 1px 12px color-mix(in srgb,var(--sw-bg) 90%,transparent);}
   .sw-copy__tags{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 0;padding:0;}
-  .sw-copy__tags li{font-size:.82rem;font-weight:600;color:color-mix(in srgb,var(--sw-accent) 70%,#000);padding:7px 14px;border-radius:999px;background:color-mix(in srgb,var(--sw-accent) 14%,#fff);border:1px solid color-mix(in srgb,var(--sw-accent) 30%,transparent);}
+  .sw-copy__tags li{font-size:.82rem;font-weight:600;color:var(--sw-accent);padding:7px 14px;border-radius:999px;background:transparent;border:1px solid color-mix(in srgb,var(--sw-accent) 55%,transparent);}
   .sw-copy__cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px;pointer-events:auto;}
   .sw-btn{text-decoration:none;font-weight:600;font-size:.95rem;padding:13px 24px;border-radius:999px;transition:transform .2s;}
-  .sw-btn--primary{color:#fff;background:var(--sw-ink);} .sw-btn--primary:hover{transform:translateY(-2px);}
+  .sw-btn--primary{color:#0A0A0A;background:var(--sw-accent);} .sw-btn--primary:hover{transform:translateY(-2px);}
   .sw-btn--ghost{color:var(--sw-ink);border:1.5px solid color-mix(in srgb,var(--sw-ink) 25%,transparent);} .sw-btn--ghost:hover{transform:translateY(-2px);}
   .sw-route{position:fixed;right:clamp(14px,2.4vw,30px);top:50%;z-index:40;transform:translateY(-50%);display:flex;flex-direction:column;gap:22px;padding:18px 10px;}
   .sw-route::before{content:"";position:absolute;left:50%;top:22px;bottom:22px;width:2px;transform:translateX(-50%);background:var(--sw-accent);opacity:.28;}
@@ -432,9 +493,9 @@ function injectCSS() {
   .sw-route__dot i{width:9px;height:9px;border-radius:50%;background:color-mix(in srgb,var(--sw-accent) 40%,transparent);transition:transform .3s,background .3s,box-shadow .3s;}
   .sw-route__dot:hover i{transform:scale(1.25);background:var(--sw-accent);}
   .sw-route__dot.is-active i{background:var(--sw-accent);transform:scale(1.4);box-shadow:0 0 0 5px color-mix(in srgb,var(--sw-accent) 22%,transparent);}
-  .sw-route__label{position:absolute;right:24px;top:50%;transform:translateY(-50%) translateX(6px);white-space:nowrap;font-size:.78rem;font-weight:600;color:var(--sw-ink);background:color-mix(in srgb,#fff 85%,transparent);backdrop-filter:blur(6px);padding:5px 11px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;border:1px solid color-mix(in srgb,var(--sw-accent) 14%,transparent);}
+  .sw-route__label{position:absolute;right:24px;top:50%;transform:translateY(-50%) translateX(6px);white-space:nowrap;font-size:.78rem;font-weight:600;color:var(--sw-ink);background:color-mix(in srgb,var(--sw-bg) 88%,transparent);padding:5px 11px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;border:1px solid color-mix(in srgb,var(--sw-accent) 14%,transparent);}
   .sw-route__dot:hover .sw-route__label,.sw-route__dot.is-active .sw-route__label{opacity:1;transform:translateY(-50%) translateX(0);}
-  .sw-hint{position:fixed;left:50%;bottom:26px;z-index:30;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sw-ink-soft);transition:opacity .3s;}
+  .sw-hint{position:fixed;left:50%;bottom:26px;z-index:30;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;font-size:.76rem;letter-spacing:0;color:var(--sw-ink-soft);transition:opacity .3s;}
   .sw-hint i{width:22px;height:34px;border-radius:12px;border:2px solid color-mix(in srgb,var(--sw-ink) 28%,transparent);position:relative;}
   .sw-hint i::after{content:"";position:absolute;left:50%;top:7px;width:4px;height:7px;border-radius:2px;background:var(--sw-accent);transform:translateX(-50%);animation:sw-wheel 1.7s ease-in-out infinite;}
   @keyframes sw-wheel{0%{opacity:0;top:6px}40%{opacity:1}100%{opacity:0;top:17px}}

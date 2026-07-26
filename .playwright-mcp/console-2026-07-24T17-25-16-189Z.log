@@ -1,0 +1,14 @@
+[    5098ms] [INFO] [O11Y] [DatadogRUM] Initialized {service: claude-ai, env: production, version: abf2f5bc42} @ https://assets-proxy.anthropic.com/claude-ai/v2/assets/v1/shared-0-5AKrPIDc.js:0
+[   10944ms] [LOG] recaptchacompat disabled @ https://js.hcaptcha.com/1/api.js?render=explicit&recaptchacompat=off&onload=__antClientAttestationHcaptchaInvisibleReady:3
+[   11195ms] [ERROR] Not signed in with the identity provider. @ https://claude.ai/login:0
+[   14436ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   14436ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   15440ms] [ERROR] [GSI_LOGGER]: FedCM get() rejects with NetworkError: Error retrieving a token. @ https://accounts.google.com/gsi/client:87
+[   36519ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   36519ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   37031ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   37062ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   41697ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   41697ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   67956ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://claude.ai/v1/privacy-consents?prefix=cookies.:0
+[   94164ms] [INFO] [COMPLETION] Starting completion request (attempt 1, mode=legacy) @ https://assets-proxy.anthropic.com/claude-ai/v2/assets/v1/shared-0-5AKrPIDc.js:0
