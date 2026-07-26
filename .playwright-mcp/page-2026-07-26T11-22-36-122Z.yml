@@ -1,0 +1,43 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - link "RS ज्वेलर्स" [ref=e6] [cursor=pointer]:
+      - /url: "#top"
+    - link "Instagram" [ref=e9] [cursor=pointer]:
+      - /url: https://instagram.com/rsjewellersindore
+  - generic:
+    - article:
+      - generic: शुद्ध सोना, शुद्ध चाँदी
+      - heading "एक विरासत, एक पहचान।" [level=2]
+      - paragraph: बड़ा सराफा, इंदौर — पीढ़ियों से चला आ रहा भरोसा।
+      - list:
+        - listitem: बड़ा सराफा
+        - listitem: इंदौर
+    - article [ref=e40]:
+      - generic [ref=e41]: हर टुकड़े में शिल्प
+      - heading "बारीकी से गढ़ा हुआ।" [level=2] [ref=e42]
+      - paragraph [ref=e43]: हर गहना हाथ से गढ़ा, हर बारीकी पर ध्यान।
+      - list [ref=e44]:
+        - listitem [ref=e45]: हस्तनिर्मित
+        - listitem [ref=e46]: बारीक शिल्प
+    - article:
+      - generic: असली चमक
+      - heading "शुद्धता जो दिखती है।" [level=2]
+      - paragraph: हॉलमार्क शुद्धता — जो आँखों से भी झलके।
+      - list:
+        - listitem: हॉलमार्क
+        - listitem: BIS प्रमाणित
+    - article:
+      - generic: और यह सब मिलकर बनता है
+      - heading "शुद्ध सोना, शुद्ध चाँदी, शुद्ध भरोसा।" [level=2]
+      - paragraph: आज ही जुड़ें — RS ज्वेलर्स, इंदौर।
+      - generic [ref=e17]:
+        - link "Instagram @rsjewellersindore" [ref=e18] [cursor=pointer]:
+          - /url: https://instagram.com/rsjewellersindore
+        - link "कॉल / WhatsApp" [ref=e19] [cursor=pointer]:
+          - /url: https://wa.me/917869541656
+  - generic [ref=e20]:
+    - button [ref=e21] [cursor=pointer]
+    - button [ref=e23] [cursor=pointer]
+    - button [ref=e25] [cursor=pointer]
+    - button [ref=e27] [cursor=pointer]
+  - generic [ref=e29]: स्क्रॉल करें

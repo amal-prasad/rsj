@@ -179,11 +179,13 @@ function mountScrollWorld(container, config) {
   const lingerEase = (x, L) => { L = clamp(L); const c = x - 0.5; return (1 - L) * x + L * (4 * c * c * c + 0.5); };
   let vh = window.innerHeight, stageX = 0, totalW = 0, activeIndex = -1, ticking = false;
   let laidOutW = window.innerWidth;   // width the current layout was computed at (see onResize)
-  // svh probe: 100svh holds steady while the URL bar slides (unlike window.innerHeight),
-  // so anchoring vh to this element's height keeps JS scroll math and the fixed CSS
-  // layers agreeing on one viewport. offsetHeight is 0 pre-layout / without svh support.
+  // lvh probe: 100lvh is the URL-bar-HIDDEN height. It holds steady while the bar slides
+  // (unlike window.innerHeight) AND it is the height a position:fixed containing block
+  // actually gets on mobile — which svh is not. Anchoring vh here keeps the scroll math,
+  // the fixed layers and the painted viewport on one number.
+  // offsetHeight is 0 pre-layout / without lvh support.
   const probe = el('div');
-  probe.style.cssText = 'position:absolute;top:0;left:0;width:0;height:100svh;pointer-events:none;visibility:hidden;';
+  probe.style.cssText = 'position:absolute;top:0;left:0;width:0;height:100vh;height:100lvh;pointer-events:none;visibility:hidden;';
   container.appendChild(probe);
 
   // Two scrub states — the equivalent of a gsap.matchMedia() desktop/mobile split.
@@ -206,7 +208,7 @@ function mountScrollWorld(container, config) {
     const wasMobile = isMobile();
     // Read the probe, not window.innerHeight: innerHeight tracks the *visual* viewport
     // (it drops ~70px the moment the URL bar slides in), while the fixed layers are sized
-    // in 100svh. Reading both from svh keeps the scroll math and the CSS on one number.
+    // in 100lvh. Reading both from lvh keeps the scroll math and the CSS on one number.
     vh = probe.offsetHeight || window.innerHeight;
     laidOutW = window.innerWidth;
     stageX = window.innerWidth > 860 ? 4 : 0;
@@ -430,11 +432,12 @@ function injectCSS() {
      redundant scroll container, a known source of position:fixed repaint glitches on iOS. */
   html{overflow-x:hidden;}
   html,body{margin:0;background:var(--sw-bg,#F5EDE0);}
-  /* The pinned layers are sized in svh (the *small* viewport height, i.e. URL bar showing).
-     inset:0 resolves against the dynamic viewport, so the layers grew and shrank ~70px
-     under scroll math that used a fixed vh — that mismatch is the "page slides up" bug.
-     svh never changes while the bar slides. The plain vh line is the pre-svh fallback. */
-  .sw-sky{position:fixed;top:0;left:0;right:0;height:100vh;height:100svh;z-index:0;overflow:hidden;pointer-events:none;background:var(--sw-bg);}
+  /* The pinned layers are sized in lvh — the URL-bar-HIDDEN height, which is exactly the
+     containing block a position:fixed element gets on mobile and never changes while the
+     bar slides. svh was wrong here: it is ~70px SHORTER than what the browser paints once
+     the bar retracts, so every layer sat one bar-height high with a black band under it —
+     the "site goes upwards" bug. The plain vh line is the pre-lvh fallback (same value). */
+  .sw-sky{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;z-index:0;overflow:hidden;pointer-events:none;background:var(--sw-bg);}
   .sw-sky__grad{position:absolute;inset:-10%;background:linear-gradient(178deg,color-mix(in srgb,var(--sw-accent) 12%,var(--sw-bg)) 0%,var(--sw-bg) 55%,color-mix(in srgb,var(--sw-accent) 6%,var(--sw-bg)) 100%);}
   .sw-sky__glow{position:absolute;inset:0;background:radial-gradient(60% 42% at 74% 16%,color-mix(in srgb,var(--sw-accent) 22%,transparent),transparent 70%),radial-gradient(46% 34% at 50% 50%,color-mix(in srgb,#fff 45%,transparent),transparent 70%);}
   .sw-particles{position:absolute;inset:-6% -2%;will-change:transform;}
@@ -456,11 +459,11 @@ function injectCSS() {
      white decal. Same gold/near-black pairing as .sw-btn--primary, so the page has one
      call-to-action colour instead of two. */
   .sw-topcta{text-decoration:none;font-weight:600;font-size:.9rem;color:#0A0A0A;background:var(--sw-accent);padding:10px 20px;border-radius:999px;white-space:nowrap;}
-  .sw-stage{position:fixed;top:0;left:0;right:0;height:100vh;height:100svh;z-index:10;pointer-events:none;}
+  .sw-stage{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;z-index:10;pointer-events:none;}
   .sw-scene{position:absolute;inset:0;opacity:0;overflow:hidden;will-change:opacity;}
   .sw-scene__video,.sw-scene__still{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 42%;}
   .sw-scene__still{will-change:transform;} .sw-scene.has-clip .sw-scene__still{opacity:0;} .sw-scene__video{z-index:1;}
-  .sw-copylayer{position:fixed;top:0;left:0;right:0;height:100vh;height:100svh;z-index:20;pointer-events:none;}
+  .sw-copylayer{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;z-index:20;pointer-events:none;}
   .sw-copylayer::before{content:"";position:absolute;inset:0;width:min(58vw,780px);background:linear-gradient(90deg,var(--sw-bg) 0%,color-mix(in srgb,var(--sw-bg) 82%,transparent) 34%,color-mix(in srgb,var(--sw-bg) 40%,transparent) 62%,transparent 100%);}
   .sw-copy{position:absolute;left:clamp(18px,5vw,64px);top:50%;transform:translateY(-50%);width:min(42vw,460px);opacity:0;will-change:opacity,transform;}
   .sw-copy__eyebrow{position:relative;display:block;margin-top:18px;padding-left:34px;font-family:var(--sw-font-body);font-weight:600;font-size:.8rem;letter-spacing:0;color:var(--sw-accent);}
@@ -503,13 +506,15 @@ function injectCSS() {
   @media (max-width:860px){
     .sw-nav{display:none;}
     .sw-copylayer::before{width:100%;height:60%;top:auto;bottom:0;background:linear-gradient(0deg,var(--sw-bg) 8%,color-mix(in srgb,var(--sw-bg) 70%,transparent) 46%,transparent 100%);}
-    /* Anchor copy to the bottom, clear of the home indicator / collapsing URL bar.
-       dvh + env() are progressive: browsers that lack them keep the vh fallback line. */
-    .sw-copy{left:clamp(18px,5vw,64px);right:clamp(18px,5vw,64px);top:auto;bottom:clamp(64px,14vh,120px);transform:none;width:auto;max-width:560px;}
-    .sw-copy{bottom:calc(clamp(56px,12dvh,110px) + env(safe-area-inset-bottom));}
+    /* Anchor copy to the bottom. The copylayer now ends at the URL-bar-HIDDEN bottom edge,
+       so the offset has to clear a ~72px bar on its way in — hence the taller floor. No dvh:
+       dvh tracks the bar mid-slide and would drag the copy with it. env() is progressive. */
+    .sw-copy{left:clamp(18px,5vw,64px);right:clamp(18px,5vw,64px);top:auto;bottom:clamp(96px,17vh,150px);transform:none;width:auto;max-width:560px;}
+    .sw-copy{bottom:calc(clamp(96px,17vh,150px) + env(safe-area-inset-bottom));}
     .sw-copy__title{font-size:clamp(1.9rem,7.5vw,2.7rem);}
     .sw-copy__body{max-width:none;font-size:clamp(.98rem,3.6vw,1.1rem);} .sw-scene__video,.sw-scene__still{object-position:center 46%;}
-    .sw-hint{bottom:calc(20px + env(safe-area-inset-bottom));}
+    /* At scroll 0 the URL bar is always showing, so a 20px offset put the hint behind it. */
+    .sw-hint{bottom:calc(84px + env(safe-area-inset-bottom));}
     .sw-route{gap:16px;right:6px;} .sw-route__label{display:none;}
   }
   /* Portrait phones crop a 16:9 clip hard; keep the framing centred so the focal
