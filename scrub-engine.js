@@ -198,8 +198,10 @@ function mountScrollWorld(container, config) {
   // lerp  how fast `cur` chases `target` per rAF tick (slower = fewer distinct seek targets/frame)
   // Desktop numbers are the engine's current values — desktop behaviour is unchanged.
   // ponytail: tuned for a mid-range Android decoder; raise dist if a slower device stutters
-  const MOBILE  = { dist: 1.25, eps: 0.033, lerp: 0.16 };
-  const DESKTOP = { dist: 1.00, eps: 0.008, lerp: 0.18 };
+  // lerp is the fraction closed per 60fps-equivalent frame; raf() rescales it by real dt,
+  // so a 120Hz phone and a stuttering 40fps one converge at the same wall-clock rate.
+  const MOBILE  = { dist: 1.00, eps: 0.033, lerp: 0.20 };
+  const DESKTOP = { dist: 0.78, eps: 0.008, lerp: 0.22 };
   const state = () => (isMobile() ? MOBILE : DESKTOP);
 
   function layout() {
@@ -296,7 +298,7 @@ function mountScrollWorld(container, config) {
       }
       const c = copies[i];
       c.style.opacity = cop;
-      c.style.transform = reduce ? 'none' : `translateY(${(0.5 - pr) * 4}vh)`;
+      c.style.transform = reduce ? 'none' : `translate3d(0, ${(0.5 - pr) * 4}vh, 0)`;
       c.style.setProperty('--p', rev);
       c.style.pointerEvents = cop > 0.5 ? 'auto' : 'none';
     }
@@ -316,23 +318,30 @@ function mountScrollWorld(container, config) {
     ticking = false;
   }
 
-  function raf() {
+  let lastT = 0;
+  function raf(now) {
     const st = state();
+    // Frame-rate-independent damping. A raw `cur += d * lerp` closes twice as much ground
+    // per second at 120Hz as at 60Hz, and stalls whenever a frame is dropped — which is
+    // exactly when the scrub looks worst. Clamp dt so a background tab doesn't snap.
+    const dt = lastT ? Math.min((now || 0) - lastT, 64) : 16.67;
+    lastT = now || 0;
     for (let i = 0; i < NSEG; i++) {
       const s = SEGMENTS[i];
       if (!s.hasClip || !s.ready || !s.video) continue;
       if (!s.visible && Math.abs(s.cur - s.target) < 0.002) continue;
       // cur converges every frame regardless of decoder state — only ISSUING a new
       // seek is gated below, so cur no longer freezes for the whole decode on a phone.
-      s.cur += (s.target - s.cur) * (reduce ? 1 : st.lerp);
+      s.cur += (s.target - s.cur) * (reduce ? 1 : 1 - Math.pow(1 - st.lerp, dt / 16.67));
       // Never queue a seek while the decoder is still resolving the last one.
       // On phones a fast flick would otherwise pile up seeks and freeze the clip.
       if (s.video.seeking) continue;
       const dur = s.video.duration || 1;
       const t = clamp(s.cur, 0, 0.999) * dur;
       if (Math.abs(s.video.currentTime - t) > st.eps) {
-        // ponytail: GOP≈4 caps fastSeek error at ~4 frames; drop this branch if it reads visibly
-        try { if (isMobile() && s.video.fastSeek) s.video.fastSeek(t); else s.video.currentTime = t; } catch (e) {}
+        // fastSeek snapped to the nearest keyframe — at GOP≈4 that is up to 4 frames of
+        // visible chatter per seek. The mobile encode is cheap enough to seek exactly.
+        try { s.video.currentTime = t; } catch (e) {}
       }
     }
     requestAnimationFrame(raf);
