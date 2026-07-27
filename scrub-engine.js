@@ -218,7 +218,12 @@ function mountScrollWorld(container, config) {
     let off = 0;
     SEGMENTS.forEach(s => { s.start = off * vh; off += s.w * k; s.end = off * vh; });
     totalW = off;
-    track.style.height = (totalW * vh + vh) + 'px';   // +1vh so the last flight completes
+    // +1vh so the last flight completes, +TAIL because vh is the URL-bar-HIDDEN height:
+    // max scroll is scrollHeight - innerHeight, and innerHeight GROWS when the bar retracts,
+    // so the scrollable range shrinks by one bar-height and the browser clamps a reader at
+    // the bottom upward. The tail absorbs that clamp. ponytail: 120px covers Chrome/Safari
+    // Android + iOS bars; raise it if a taller chrome ever clamps again.
+    track.style.height = (totalW * vh + vh + 120) + 'px';
     // Crossing the 860px breakpoint swaps `dist`, which rescales the whole track — hold the
     // reader's place proportionally instead of dumping them into a different scene. Gate on
     // the breakpoint itself, NOT on track length: a URL-bar slide moves track length by
@@ -438,8 +443,11 @@ function injectCSS() {
     --sw-font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
     color:var(--sw-ink);font-family:var(--sw-font-body);}
   /* overflow-x on html propagates to the viewport; repeating it on body only makes body a
-     redundant scroll container, a known source of position:fixed repaint glitches on iOS. */
-  html{overflow-x:hidden;}
+     redundant scroll container, a known source of position:fixed repaint glitches on iOS.
+     `clip` not `hidden`: hidden makes the root a scroll container, which mis-anchors
+     position:fixed layers on iOS while the URL bar slides. clip suppresses the same
+     overflow without creating one. */
+  html{overflow-x:clip;}
   html,body{margin:0;background:var(--sw-bg,#F5EDE0);}
   /* The pinned layers are sized in lvh — the URL-bar-HIDDEN height, which is exactly the
      containing block a position:fixed element gets on mobile and never changes while the
