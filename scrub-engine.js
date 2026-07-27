@@ -444,7 +444,7 @@ function injectCSS() {
     color:var(--sw-ink);font-family:var(--sw-font-body);}
   /* overflow-x on html propagates to the viewport; repeating it on body only makes body a
      redundant scroll container, a known source of position:fixed repaint glitches on iOS.
-     `clip` not `hidden`: hidden makes the root a scroll container, which mis-anchors
+     clip not hidden: hidden makes the root a scroll container, which mis-anchors
      position:fixed layers on iOS while the URL bar slides. clip suppresses the same
      overflow without creating one. */
   html{overflow-x:clip;}

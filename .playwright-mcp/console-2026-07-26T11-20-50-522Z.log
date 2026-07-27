@@ -1,0 +1,6 @@
+[75004709ms] Unexpected identifier 'clip'
+[75004711ms] ReferenceError: mountScrollWorld is not defined
+    at https://rsj-puce.vercel.app/:131:5
+[75026513ms] Unexpected identifier 'clip'
+[75026513ms] ReferenceError: mountScrollWorld is not defined
+    at https://rsj-puce.vercel.app/:131:5
