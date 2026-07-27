@@ -72,6 +72,20 @@ function mountScrollWorld(container, config) {
   const coarse = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
   const smallMQ = window.matchMedia('(max-width: 860px)');
   const isMobile = () => coarse || smallMQ.matches;
+  // Phones only: make <body> the scroll container instead of the document. A document that
+  // never scrolls is a document whose URL bar never collapses — so the visual viewport stops
+  // resizing mid-gesture, and "the page slides upward" has nothing left to slide. Everything
+  // is then sized in svh (bar SHOWING) because that is now permanently what gets painted.
+  // Desktop keeps the native document scroller: space/arrow keys and the native scrollbar.
+  // ponytail: gated on `coarse`, not width — a narrow desktop window has a real scrollbar
+  // and no URL bar, so it must not lose keyboard scrolling for a bug it does not have.
+  const locked = coarse;
+  if (locked) document.documentElement.classList.add('sw-locked');
+  const getY = () => locked ? document.body.scrollTop : (window.scrollY || window.pageYOffset || 0);
+  const scrollToY = (top, smoothly) => {
+    const o = { top, behavior: smoothly ? 'smooth' : 'auto' };
+    if (locked) document.body.scrollTo(o); else window.scrollTo(o);
+  };
   const SECTIONS = config.sections || [];
   const CONNECTORS = config.connectors || [];
   const CONNECTORS_M = config.connectorsMobile || [];
@@ -177,15 +191,17 @@ function mountScrollWorld(container, config) {
   // (where the copy peaks) and moves quicker near the seams. L=0 linear, L=1 full
   // mid-scene pause. f(0)=0, f(1)=1 always, so seam frames are untouched.
   const lingerEase = (x, L) => { L = clamp(L); const c = x - 0.5; return (1 - L) * x + L * (4 * c * c * c + 0.5); };
-  let vh = window.innerHeight, stageX = 0, totalW = 0, activeIndex = -1, ticking = false;
+  let vh = window.innerHeight, stageX = 0, totalW = 0, activeIndex = -1;
+  let sy = 0;                         // smoothed scroll position — the single input to read()
   let laidOutW = window.innerWidth;   // width the current layout was computed at (see onResize)
   // lvh probe: 100lvh is the URL-bar-HIDDEN height. It holds steady while the bar slides
   // (unlike window.innerHeight) AND it is the height a position:fixed containing block
   // actually gets on mobile — which svh is not. Anchoring vh here keeps the scroll math,
   // the fixed layers and the painted viewport on one number.
   // offsetHeight is 0 pre-layout / without lvh support.
-  const probe = el('div');
-  probe.style.cssText = 'position:absolute;top:0;left:0;width:0;height:100vh;height:100lvh;pointer-events:none;visibility:hidden;';
+  // Height lives in CSS so `.sw-locked` can switch it to 100svh in one place, alongside the
+  // fixed layers it has to agree with.
+  const probe = el('div', 'sw-probe');
   container.appendChild(probe);
 
   // Two scrub states — the equivalent of a gsap.matchMedia() desktop/mobile split.
@@ -200,13 +216,17 @@ function mountScrollWorld(container, config) {
   // ponytail: tuned for a mid-range Android decoder; raise dist if a slower device stutters
   // lerp is the fraction closed per 60fps-equivalent frame; raf() rescales it by real dt,
   // so a 120Hz phone and a stuttering 40fps one converge at the same wall-clock rate.
-  const MOBILE  = { dist: 1.00, eps: 0.033, lerp: 0.20 };
-  const DESKTOP = { dist: 0.78, eps: 0.008, lerp: 0.22 };
+  // slerp how fast the scroll position ITSELF is chased. A thumb drag delivers coarse,
+  //       jittery deltas (and iOS momentum arrives in uneven bursts); feeding those straight
+  //       into opacity/parallax/seek targets is what reads as "steppy". Smoothing the input
+  //       once smooths every consumer at the same time. 1 = off (desktop wheel is already fine).
+  const MOBILE  = { dist: 1.00, eps: 0.033, lerp: 0.20, slerp: 0.22 };
+  const DESKTOP = { dist: 0.78, eps: 0.008, lerp: 0.22, slerp: 1 };
   const state = () => (isMobile() ? MOBILE : DESKTOP);
 
   function layout() {
     const prevLen = totalW * vh;
-    const frac = prevLen ? (window.scrollY || 0) / prevLen : 0;
+    const frac = prevLen ? getY() / prevLen : 0;
     const wasMobile = isMobile();
     // Read the probe, not window.innerHeight: innerHeight tracks the *visual* viewport
     // (it drops ~70px the moment the URL bar slides in), while the fixed layers are sized
@@ -218,23 +238,23 @@ function mountScrollWorld(container, config) {
     let off = 0;
     SEGMENTS.forEach(s => { s.start = off * vh; off += s.w * k; s.end = off * vh; });
     totalW = off;
-    // +1vh so the last flight completes, +TAIL because vh is the URL-bar-HIDDEN height:
-    // max scroll is scrollHeight - innerHeight, and innerHeight GROWS when the bar retracts,
-    // so the scrollable range shrinks by one bar-height and the browser clamps a reader at
-    // the bottom upward. The tail absorbs that clamp. ponytail: 120px covers Chrome/Safari
-    // Android + iOS bars; raise it if a taller chrome ever clamps again.
-    track.style.height = (totalW * vh + vh + 120) + 'px';
+    // +1vh so the last flight completes. The 120px tail only exists for the unlocked
+    // (desktop / non-coarse) path: there `vh` is the bar-hidden height and the browser can
+    // clamp a reader upward when the bar retracts. With body-as-scroller nothing resizes,
+    // so the tail is dead weight that just parks the reader past the last scene.
+    track.style.height = (totalW * vh + vh + (locked ? 0 : 120)) + 'px';
     // Crossing the 860px breakpoint swaps `dist`, which rescales the whole track — hold the
     // reader's place proportionally instead of dumping them into a different scene. Gate on
     // the breakpoint itself, NOT on track length: a URL-bar slide moves track length by
     // ~330px, and scrollTo-ing mid-gesture is exactly the "page jumps" bug.
-    if (frac && isMobile() !== wasMobile) window.scrollTo(0, frac * totalW * vh);
+    if (frac && isMobile() !== wasMobile) scrollToY(frac * totalW * vh);
+    sy = getY();
     read();
   }
 
   function jumpTo(i) {
     const seg = SECTIONS[i]._seg;
-    window.scrollTo({ top: seg.start + (seg.end - seg.start) * 0.5, behavior: reduce ? 'auto' : 'smooth' });
+    scrollToY(seg.start + (seg.end - seg.start) * 0.5, !reduce);
   }
 
   function loadClip(s) {
@@ -262,7 +282,7 @@ function mountScrollWorld(container, config) {
   }
 
   function read() {
-    const y = window.scrollY || window.pageYOffset;
+    const y = sy;
     const fade = CROSSFADE * vh;
     let ci = 0;
     for (let i = 0; i < NSEG; i++) if (y >= SEGMENTS[i].start) ci = i;
@@ -273,7 +293,12 @@ function mountScrollWorld(container, config) {
       const local = clamp((y - s.start) / (s.end - s.start), 0, 1);
       s.target = s.linger ? lingerEase(local, s.linger * (isMobile() ? 0.5 : 1)) : local;
       let outside = 0;
-      if (y < s.start) outside = s.start - y; else if (y > s.end) outside = y - s.end;
+      if (y < s.start) outside = s.start - y;
+      // The LAST segment never fades out. Past its end there is nothing behind it but
+      // .sw-sky, whose glow is a 45%-white radial — that is the "model vanishes and the
+      // screen flashes white at the bottom of the page" bug. It holds its final frame
+      // instead. The first segment already can't fade out the other way (y >= 0).
+      else if (y > s.end && i < NSEG - 1) outside = y - s.end;
       const op = smooth(1 - outside / fade);
       s.el.style.opacity = op; s.visible = op > 0.001;
       s.el.style.zIndex = (i === ci) ? '120' : String(100 + Math.round(op * 10));
@@ -320,10 +345,9 @@ function mountScrollWorld(container, config) {
     scrollbarFill.style.transform = `scaleX(${clamp(y / (totalW * vh))})`;
     hint.style.opacity = clamp(1 - y / (0.5 * vh));
     if (particles) particles.style.transform = `translate3d(0, ${-y * 0.05}px, 0)`;
-    ticking = false;
   }
 
-  let lastT = 0;
+  let lastT = 0, lastRead = -1;
   function raf(now) {
     const st = state();
     // Frame-rate-independent damping. A raw `cur += d * lerp` closes twice as much ground
@@ -331,6 +355,18 @@ function mountScrollWorld(container, config) {
     // exactly when the scrub looks worst. Clamp dt so a background tab doesn't snap.
     const dt = lastT ? Math.min((now || 0) - lastT, 64) : 16.67;
     lastT = now || 0;
+    // One smoothing stage for the whole engine. read() used to run off the raw scroll
+    // offset in a scroll-event handler, so every consumer (scene opacity, copy fade, the
+    // seek target) inherited thumb jitter; only the video was damped, and it was damped
+    // against a jittery target. Now the position is smoothed once, here, and read() runs
+    // on the same clock as the seeks — no scroll listener at all.
+    const raw = getY();
+    if (st.slerp >= 1 || reduce) sy = raw;
+    else {
+      sy += (raw - sy) * (1 - Math.pow(1 - st.slerp, dt / 16.67));
+      if (Math.abs(raw - sy) < 0.4) sy = raw;   // snap, else it creeps forever at sub-pixel
+    }
+    if (sy !== lastRead) { lastRead = sy; read(); }
     for (let i = 0; i < NSEG; i++) {
       const s = SEGMENTS[i];
       if (!s.hasClip || !s.ready || !s.video) continue;
@@ -384,7 +420,8 @@ function mountScrollWorld(container, config) {
 
   // Particles are a per-frame cost we can't afford alongside video scrubbing on a phone.
   seedParticles(particles, reduce || coarse);
-  window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(read); } }, { passive: true });
+  // No scroll listener: raf() polls getY() every frame and drives read() off the smoothed
+  // value. One clock, one code path, and nothing to throttle.
   // Mobile browsers fire `resize` every time the URL bar slides in/out. Re-running
   // layout() there rebuilds the track height and yanks the scroll position, so on
   // touch we ignore height-only changes and only relayout when the width actually
@@ -449,6 +486,23 @@ function injectCSS() {
      overflow without creating one. */
   html{overflow-x:clip;}
   html,body{margin:0;background:var(--sw-bg,#F5EDE0);}
+  /* Coarse-pointer only (set from JS): body IS the scroller. The document itself never
+     scrolls, so the URL bar never collapses, so the visual viewport never resizes — the
+     one thing that made the pinned stage appear to slide upward mid-gesture.
+     height is 100svh (bar SHOWING) because with the bar pinned open that is now exactly
+     what gets painted; the vh line is the pre-svh fallback.
+     overscroll-behavior kills scroll-chaining to the document, which is also what stopped
+     the rubber-band flash of unpainted canvas at the two extremes.
+     position:fixed on body does NOT become a containing block for fixed descendants
+     (only transform/filter/will-change/contain do), so .sw-stage & co. still pin to the
+     viewport. ponytail: if a future iOS clips fixed content under its floating bottom bar,
+     the escape hatch is to drop .sw-locked and go back to the lvh path. */
+  html.sw-locked{height:100%;overflow:hidden;overscroll-behavior:none;}
+  html.sw-locked body{position:fixed;top:0;left:0;right:0;height:100vh;height:100svh;
+    overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:none;}
+  .sw-probe{position:absolute;top:0;left:0;width:0;height:100vh;height:100lvh;pointer-events:none;visibility:hidden;}
+  .sw-locked .sw-probe{height:100svh;}
+  .sw-locked .sw-sky,.sw-locked .sw-stage,.sw-locked .sw-copylayer{height:100svh;}
   /* The pinned layers are sized in lvh — the URL-bar-HIDDEN height, which is exactly the
      containing block a position:fixed element gets on mobile and never changes while the
      bar slides. svh was wrong here: it is ~70px SHORTER than what the browser paints once
@@ -528,6 +582,9 @@ function injectCSS() {
        dvh tracks the bar mid-slide and would drag the copy with it. env() is progressive. */
     .sw-copy{left:clamp(18px,5vw,64px);right:clamp(18px,5vw,64px);top:auto;bottom:clamp(96px,17vh,150px);transform:none;width:auto;max-width:560px;}
     .sw-copy{bottom:calc(clamp(96px,17vh,150px) + env(safe-area-inset-bottom));}
+    /* Under .sw-locked the copylayer already ends at the visible bottom edge (100svh), so
+       the tall floor that used to clear the URL bar now just strands the copy mid-screen. */
+    .sw-locked .sw-copy{bottom:calc(clamp(56px,10vh,96px) + env(safe-area-inset-bottom));}
     .sw-copy__title{font-size:clamp(1.9rem,7.5vw,2.7rem);}
     .sw-copy__body{max-width:none;font-size:clamp(.98rem,3.6vw,1.1rem);} .sw-scene__video,.sw-scene__still{object-position:center 46%;}
     /* At scroll 0 the URL bar is always showing, so a 20px offset put the hint behind it. */
