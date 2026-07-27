@@ -441,6 +441,12 @@ function mountScrollWorld(container, config) {
   // URL bar has usually moved. Going through layout() directly bypassed the touch guard
   // and could scrollTo a reader who is already scrolling behind the loader veil.
   window.addEventListener('load', onResize);
+  // On the body-as-scroller path, rAF-only polling can miss scroll updates during heavy
+  // decode or when the tab deprioritises animation frames. A passive scroll listener on
+  // body keeps `sy` fresh so read() never stalls — especially on momentum flings.
+  if (locked) {
+    document.body.addEventListener('scroll', () => { sy = getY(); read(); }, { passive: true });
+  }
   layout(); laidOut = true; maybeReady();
   requestAnimationFrame(raf);
 
@@ -499,7 +505,8 @@ function injectCSS() {
      the escape hatch is to drop .sw-locked and go back to the lvh path. */
   html.sw-locked{height:100%;overflow:hidden;overscroll-behavior:none;}
   html.sw-locked body{position:fixed;top:0;left:0;right:0;height:100vh;height:100svh;
-    overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:none;}
+    overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:none;
+    touch-action:manipulation;}
   .sw-probe{position:absolute;top:0;left:0;width:0;height:100vh;height:100lvh;pointer-events:none;visibility:hidden;}
   .sw-locked .sw-probe{height:100svh;}
   .sw-locked .sw-sky,.sw-locked .sw-stage,.sw-locked .sw-copylayer{height:100svh;}
@@ -517,9 +524,11 @@ function injectCSS() {
   .sw-pt--dot::before{background:radial-gradient(circle at 34% 30%,color-mix(in srgb,var(--sw-accent) 60%,#000),#000 82%);}
   .sw-pt--ring::before{background:transparent;border:2px solid color-mix(in srgb,var(--sw-accent) 55%,transparent);}
   @keyframes sw-drift{0%{opacity:0;transform:scale(var(--sw-sc)) translate(0,12vh) rotate(0)}12%{opacity:.5}88%{opacity:.45}100%{opacity:0;transform:scale(var(--sw-sc)) translate(4vw,-22vh) rotate(210deg)}}
-  .sw-scrollbar{position:fixed;top:0;left:0;right:0;height:3px;z-index:60;background:color-mix(in srgb,var(--sw-accent) 14%,transparent);}
+  .sw-scrollbar{position:fixed;top:0;left:0;right:0;height:3px;z-index:60;background:color-mix(in srgb,var(--sw-accent) 14%,transparent);pointer-events:none;}
   .sw-scrollbar span{display:block;height:100%;width:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--sw-accent);}
   .sw-topbar{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:clamp(14px,2.4vw,26px) clamp(18px,5vw,64px);}
+  .sw-locked .sw-topbar{pointer-events:none;}
+  .sw-locked .sw-topbar>*{pointer-events:auto;}
   .sw-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--sw-ink);}
   .sw-brand__mark{width:24px;height:28px;border-radius:7px 7px 10px 10px;background:linear-gradient(160deg,var(--sw-accent),color-mix(in srgb,var(--sw-accent) 60%,#000));box-shadow:0 6px 14px color-mix(in srgb,var(--sw-accent) 40%,transparent);}
   .sw-brand__name{font-family:var(--sw-font-display);font-weight:700;font-size:1.1rem;letter-spacing:0;}
@@ -573,7 +582,9 @@ function injectCSS() {
   .sw-hint i{width:22px;height:34px;border-radius:12px;border:2px solid color-mix(in srgb,var(--sw-ink) 28%,transparent);position:relative;}
   .sw-hint i::after{content:"";position:absolute;left:50%;top:7px;width:4px;height:7px;border-radius:2px;background:var(--sw-accent);transform:translateX(-50%);animation:sw-wheel 1.7s ease-in-out infinite;}
   @keyframes sw-wheel{0%{opacity:0;top:6px}40%{opacity:1}100%{opacity:0;top:17px}}
-  .sw-track{position:relative;z-index:1;width:100%;pointer-events:none;}
+  .sw-track{position:relative;z-index:1;width:100%;}
+  .sw-track{pointer-events:none;}
+  .sw-locked .sw-track{pointer-events:auto;}
   @media (max-width:860px){
     .sw-nav{display:none;}
     .sw-copylayer::before{width:100%;height:60%;top:auto;bottom:0;background:linear-gradient(0deg,var(--sw-bg) 8%,color-mix(in srgb,var(--sw-bg) 70%,transparent) 46%,transparent 100%);}
