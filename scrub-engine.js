@@ -72,19 +72,15 @@ function mountScrollWorld(container, config) {
   const coarse = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
   const smallMQ = window.matchMedia('(max-width: 860px)');
   const isMobile = () => coarse || smallMQ.matches;
-  // Phones only: make <body> the scroll container instead of the document. A document that
-  // never scrolls is a document whose URL bar never collapses — so the visual viewport stops
-  // resizing mid-gesture, and "the page slides upward" has nothing left to slide. Everything
-  // is then sized in svh (bar SHOWING) because that is now permanently what gets painted.
-  // Desktop keeps the native document scroller: space/arrow keys and the native scrollbar.
-  // ponytail: gated on `coarse`, not width — a narrow desktop window has a real scrollbar
-  // and no URL bar, so it must not lose keyboard scrolling for a bug it does not have.
-  const locked = coarse;
-  if (locked) document.documentElement.classList.add('sw-locked');
-  const getY = () => locked ? document.body.scrollTop : (window.scrollY || window.pageYOffset || 0);
+  // Body-as-scroller (sw-locked) disabled: it was intended to pin the URL bar by making
+  // body the scroll container, but on many mobile browsers position:fixed + overflow:auto
+  // on body breaks touch scrolling entirely. Instead, we use normal document scrolling and
+  // rely on the onResize guard (ignores height-only changes on touch) + the 100lvh probe
+  // (stable vh regardless of URL bar state) to prevent the "page goes upwards" bug.
+  const locked = false;
+  const getY = () => (window.scrollY || window.pageYOffset || 0);
   const scrollToY = (top, smoothly) => {
-    const o = { top, behavior: smoothly ? 'smooth' : 'auto' };
-    if (locked) document.body.scrollTo(o); else window.scrollTo(o);
+    window.scrollTo({ top, behavior: smoothly ? 'smooth' : 'auto' });
   };
   const SECTIONS = config.sections || [];
   const CONNECTORS = config.connectors || [];
@@ -441,12 +437,6 @@ function mountScrollWorld(container, config) {
   // URL bar has usually moved. Going through layout() directly bypassed the touch guard
   // and could scrollTo a reader who is already scrolling behind the loader veil.
   window.addEventListener('load', onResize);
-  // On the body-as-scroller path, rAF-only polling can miss scroll updates during heavy
-  // decode or when the tab deprioritises animation frames. A passive scroll listener on
-  // body keeps `sy` fresh so read() never stalls — especially on momentum flings.
-  if (locked) {
-    document.body.addEventListener('scroll', () => { sy = getY(); read(); }, { passive: true });
-  }
   layout(); laidOut = true; maybeReady();
   requestAnimationFrame(raf);
 

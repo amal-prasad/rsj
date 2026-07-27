@@ -98,7 +98,7 @@
     const isPhone = window.matchMedia('(hover: none) and (pointer: coarse)').matches
                  || window.matchMedia('(max-width: 860px)').matches;
     const LOADER_MIN = isPhone ? 4200 : 3000;    // brand beat floor
-    const LOADER_MAX = isPhone ? 8000 : 9000;    // safety net — never trap the user
+    const LOADER_MAX = isPhone ? 12000 : 9000;   // safety net — never trap the user
     const t0 = performance.now();
 
     // (a) engine built: layout() ran AND scene 1 can paint
@@ -120,13 +120,6 @@
       if (!l) return;
       l.classList.add('is-done');
       setTimeout(() => l.remove(), 700);          // after the .6s opacity transition
-      // On mobile, the body-as-scroller may not recognise its content as scrollable
-      // until a programmatic nudge forces the browser to recalculate the scroll area.
-      if (isPhone) {
-        requestAnimationFrame(() => {
-          document.body.scrollTop = document.body.scrollTop;
-        });
-      }
     }
 
     Promise.all([engineReady, pageLoad, fontsReady])
